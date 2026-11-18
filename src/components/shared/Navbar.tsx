@@ -9,7 +9,7 @@ const navLinks = [
     { name: "Home", href: "/" },
     { name: "Services", href: "/services" },
     { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+
 ];
 
 export default function Navbar() {
@@ -59,17 +59,17 @@ export default function Navbar() {
                 {/* Desktop Auth Buttons */}
                 <div className="hidden items-center gap-5 md:flex">
                     <Link
-                        href="/login"
+                        href="/sign-in"
                         className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
                     >
-                        Login
+                        Sign In
                     </Link>
 
                     <Link
-                        href="/register"
+                        href="/sign-up"
                         className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600"
                     >
-                        Get Started
+                        Sign Up
                     </Link>
                 </div>
 
