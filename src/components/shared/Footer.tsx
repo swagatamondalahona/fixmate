@@ -31,11 +31,10 @@ export default function Footer() {
                             <Image
                                 src="/fixmatelogo.png"
                                 alt="FixMate Logo"
-                                width={45}
-                                height={45}
-                                className="rounded-lg"
+                                width={150}
+                                height={50}
+                                className="w-36 h-auto"
                             />
-
                             <span className="text-2xl font-extrabold text-white">
                                 Fix<span className="text-orange-500">Mate</span>
                             </span>
@@ -162,7 +161,7 @@ export default function Footer() {
                 <div className="mt-14 border-t border-zinc-800 pt-7">
                     <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
                         <p className="text-sm text-zinc-500">
-                            © {new Date().getFullYear()} FixMate. All rights reserved.
+                            © 2026 FixMate. All rights reserved.
                         </p>
 
                         <p className="text-sm text-zinc-500">
