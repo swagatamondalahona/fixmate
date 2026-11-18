@@ -3,6 +3,7 @@ import HeroSlider from "@/components/home/HeroSlider";
 import FeaturedServices from "@/components/home/FeaturedServices";
 import HowItWorks from "@/components/home/HowItWorks";
 import PopularCategories from "@/components/home/PopularCategories";
+import WhyChooseUs from "@/components/home/WhyChooseUs";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
 
       {/* Popular Categories Section will be added here */}
       <PopularCategories />
+      <WhyChooseUs />
     </main>
   );
 }
