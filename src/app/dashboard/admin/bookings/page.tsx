@@ -1,0 +1,371 @@
+
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+
+interface Booking {
+    _id: string;
+    serviceTitle: string;
+    serviceImage?: string;
+    customerId: string;
+    customerEmail?: string;
+    technicianId: string;
+    technicianEmail?: string;
+    bookingDate: string;
+    address: string;
+    notes?: string;
+    basePrice: number;
+    finalAmount: number | null;
+    status: string;
+    paymentStatus: string;
+    createdAt?: string;
+}
+
+type BookingFilter = "all" | "requested" | "accepted" | "in-progress" | "completed" | "rejected" | "cancelled";
+
+export default function AdminBookingsPage() {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [filter, setFilter] = useState<BookingFilter>("all");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+    const getAuthToken = async (): Promise<string> => {
+        const { data, error: tokenError } = await authClient.token();
+
+        if (tokenError || !data?.token) {
+            throw new Error(
+                tokenError?.message || "Authentication required. Please sign in again."
+            );
+        }
+
+        return data.token;
+    };
+
+    const fetchBookings = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError("");
+
+            if (!API_URL) {
+                throw new Error("Backend API URL is not configured.");
+            }
+
+            const token = await getAuthToken();
+
+            const response = await fetch(`${API_URL}/api/admin/bookings`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const responseText = await response.text();
+
+            let result;
+
+            try {
+                result = JSON.parse(responseText);
+            } catch {
+                throw new Error(
+                    `Backend returned an invalid response. HTTP ${response.status}`
+                );
+            }
+
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to load bookings.");
+            }
+
+            setBookings(Array.isArray(result.data) ? result.data : []);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Something went wrong."
+            );
+            setBookings([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [API_URL]);
+
+    useEffect(() => {
+        fetchBookings();
+    }, [fetchBookings]);
+
+    const filteredBookings = useMemo(() => {
+        if (filter === "all") return bookings;
+
+        return bookings.filter(
+            (booking) => booking.status === filter
+        );
+    }, [bookings, filter]);
+
+    const counts = {
+        all: bookings.length,
+        requested: bookings.filter((b) => b.status === "requested").length,
+        accepted: bookings.filter((b) => b.status === "accepted").length,
+        inProgress: bookings.filter((b) => b.status === "in-progress").length,
+        completed: bookings.filter((b) => b.status === "completed").length,
+        rejected: bookings.filter((b) => b.status === "rejected").length,
+        cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    };
+
+    const getStatusStyle = (status: string) => {
+        switch (status) {
+            case "completed":
+                return "bg-green-500/10 text-green-400";
+            case "accepted":
+            case "in-progress":
+                return "bg-blue-500/10 text-blue-400";
+            case "rejected":
+            case "cancelled":
+                return "bg-red-500/10 text-red-400";
+            case "requested":
+                return "bg-yellow-500/10 text-yellow-400";
+            default:
+                return "bg-zinc-500/10 text-zinc-400";
+        }
+    };
+
+    const formatDate = (date: string) => {
+        if (!date) return "Not available";
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return "Invalid date";
+        }
+
+        return parsedDate.toLocaleString();
+    };
+
+    return (
+        <main className="min-h-screen bg-black px-5 py-12 text-white sm:px-8 lg:px-12">
+            <div className="mx-auto max-w-7xl">
+
+                {/* Header */}
+                <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                    <div>
+                        <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-500">
+                            FixMate Administration
+                        </p>
+
+                        <h1 className="text-3xl font-bold sm:text-5xl">
+                            Manage <span className="text-orange-500">Bookings</span>
+                        </h1>
+
+                        <p className="mt-3 text-sm text-zinc-400">
+                            View and monitor all customer service bookings.
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={fetchBookings}
+                        disabled={loading}
+                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-black disabled:opacity-50"
+                    >
+                        {loading ? "Loading..." : "Refresh Bookings"}
+                    </button>
+                </div>
+
+                {/* Statistics */}
+                <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    {([
+                        ["All Bookings", counts.all, "all"],
+                        ["Requested", counts.requested, "requested"],
+                        ["Accepted", counts.accepted, "accepted"],
+                        ["In Progress", counts.inProgress, "in-progress"],
+                        ["Completed", counts.completed, "completed"],
+                        ["Rejected", counts.rejected, "rejected"],
+                        ["Cancelled", counts.cancelled, "cancelled"],
+                    ] as const).map(([label, count, key]) => (
+                        <button
+                            key={key}
+                            onClick={() => setFilter(key)}
+                            className={`rounded-2xl border p-5 text-left transition ${filter === key
+                                    ? "border-orange-500 bg-orange-500/10"
+                                    : "border-white/10 bg-zinc-950 hover:border-orange-500/40"
+                                }`}
+                        >
+                            <p className="text-sm text-zinc-400">{label}</p>
+
+                            <p className="mt-2 text-3xl font-bold text-orange-500">
+                                {count}
+                            </p>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div
+                        role="alert"
+                        className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                    >
+                        {error}
+                    </div>
+                )}
+
+                {/* Booking List */}
+                {loading ? (
+                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center text-zinc-400">
+                        Loading bookings...
+                    </div>
+                ) : error && bookings.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                        <p className="text-zinc-400">
+                            Unable to load bookings.
+                        </p>
+
+                        <button
+                            onClick={fetchBookings}
+                            className="mt-4 rounded-xl bg-orange-500 px-5 py-2 font-semibold text-black"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : filteredBookings.length === 0 ? (
+                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                        <div className="mb-4 text-5xl">📋</div>
+
+                        <h2 className="text-xl font-semibold">
+                            No Bookings Found
+                        </h2>
+
+                        <p className="mt-2 text-sm text-zinc-400">
+                            There are no bookings in this category.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {filteredBookings.map((booking) => (
+                            <article
+                                key={booking._id}
+                                className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 transition hover:border-orange-500/40"
+                            >
+                                <div className="p-5 sm:p-7">
+
+                                    {/* Service and Status */}
+                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                        <div className="flex items-center gap-4">
+                                            {booking.serviceImage ? (
+                                                <img
+                                                    src={booking.serviceImage}
+                                                    alt={booking.serviceTitle}
+                                                    className="h-16 w-16 rounded-xl object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-900 text-3xl">
+                                                    🔧
+                                                </div>
+                                            )}
+
+                                            <div>
+                                                <h2 className="text-lg font-bold sm:text-xl">
+                                                    {booking.serviceTitle}
+                                                </h2>
+
+                                                <p className="mt-1 break-all text-xs text-zinc-500">
+                                                    Booking ID: {booking._id}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(booking.status)}`}>
+                                                {booking.status}
+                                            </span>
+
+                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${booking.paymentStatus === "paid"
+                                                    ? "bg-green-500/10 text-green-400"
+                                                    : "bg-yellow-500/10 text-yellow-400"
+                                                }`}>
+                                                {booking.paymentStatus}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Booking Details */}
+                                    <div className="mt-6 grid gap-5 border-t border-white/10 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Customer
+                                            </p>
+
+                                            <p className="mt-2 break-all text-sm text-white">
+                                                {booking.customerEmail || booking.customerId}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Technician
+                                            </p>
+
+                                            <p className="mt-2 break-all text-sm text-white">
+                                                {booking.technicianEmail || booking.technicianId}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Booking Date
+                                            </p>
+
+                                            <p className="mt-2 text-sm text-white">
+                                                {formatDate(booking.bookingDate)}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Service Address
+                                            </p>
+
+                                            <p className="mt-2 text-sm text-white">
+                                                {booking.address}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Base Price
+                                            </p>
+
+                                            <p className="mt-2 text-sm font-semibold text-orange-400">
+                                                {booking.basePrice}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Final Amount
+                                            </p>
+
+                                            <p className="mt-2 text-sm font-semibold text-orange-400">
+                                                {booking.finalAmount ?? "Not set"}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {booking.notes && (
+                                        <div className="mt-5 border-t border-white/10 pt-5">
+                                            <p className="text-xs uppercase tracking-wider text-zinc-500">
+                                                Problem Description
+                                            </p>
+
+                                            <p className="mt-2 text-sm leading-6 text-zinc-300">
+                                                {booking.notes}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </main>
+    );
+}
