@@ -62,7 +62,6 @@ export default function AdminDashboard() {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
                     },
                 }
             );
@@ -78,7 +77,7 @@ export default function AdminDashboard() {
             setServices(Array.isArray(result.data) ? result.data : []);
             setApiStatus("Connected");
         } catch (err) {
-            setApiStatus("Authentication Failed");
+            setApiStatus("Connection Failed");
             setServices([]);
 
             setError(
@@ -117,7 +116,6 @@ export default function AdminDashboard() {
                     method: "PATCH",
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
                     },
                 }
             );
@@ -125,7 +123,9 @@ export default function AdminDashboard() {
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || "Service update failed.");
+                throw new Error(
+                    result.message || "Service update failed."
+                );
             }
 
             setServices((previous) =>
@@ -149,13 +149,11 @@ export default function AdminDashboard() {
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-black px-5 py-16 text-white sm:px-8 lg:px-12">
-
             {/* Background */}
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-600/10 blur-[120px]" />
             <div className="pointer-events-none absolute -right-40 top-80 h-96 w-96 rounded-full bg-blue-700/10 blur-[120px]" />
 
             <div className="relative mx-auto max-w-7xl">
-
                 {/* Header */}
                 <div className="mb-12 flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                     <div>
@@ -164,25 +162,28 @@ export default function AdminDashboard() {
                         </p>
 
                         <h1 className="text-3xl font-bold sm:text-5xl">
-                            Admin <span className="text-orange-500">Dashboard</span>
+                            Admin{" "}
+                            <span className="text-orange-500">
+                                Dashboard
+                            </span>
                         </h1>
 
                         <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
-                            Manage repair services, review technician submissions
-                            and control service approvals.
+                            Manage repair services, review technician
+                            submissions and control service approvals.
                         </p>
                     </div>
 
                     <button
                         onClick={fetchPendingServices}
                         disabled={loading}
-                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-black disabled:opacity-50"
+                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {loading ? "Loading..." : "Refresh Services"}
                     </button>
                 </div>
 
-                {/* Stats */}
+                {/* Statistics */}
                 <div className="mb-10 grid gap-5 sm:grid-cols-2">
                     <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-7">
                         <p className="text-sm text-zinc-400">
@@ -199,10 +200,14 @@ export default function AdminDashboard() {
                             Dashboard Status
                         </p>
 
-                        <h2 className={`mt-3 text-2xl font-bold ${apiStatus === "Connected"
-                                ? "text-green-500"
-                                : "text-red-400"
-                            }`}>
+                        <h2
+                            className={`mt-3 text-2xl font-bold ${apiStatus === "Connected"
+                                    ? "text-green-500"
+                                    : apiStatus === "Checking..."
+                                        ? "text-yellow-400"
+                                        : "text-red-400"
+                                }`}
+                        >
                             {apiStatus}
                         </h2>
                     </div>
@@ -210,14 +215,20 @@ export default function AdminDashboard() {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+                    <div
+                        role="alert"
+                        className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                    >
                         {error}
                     </div>
                 )}
 
                 {/* Success Message */}
                 {message && (
-                    <div className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400">
+                    <div
+                        role="status"
+                        className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
+                    >
                         {message}
                     </div>
                 )}
@@ -225,7 +236,10 @@ export default function AdminDashboard() {
                 {/* Pending Services Heading */}
                 <div className="mb-7">
                     <h2 className="text-2xl font-bold">
-                        Pending <span className="text-orange-500">Services</span>
+                        Pending{" "}
+                        <span className="text-orange-500">
+                            Services
+                        </span>
                     </h2>
 
                     <p className="mt-2 text-sm text-zinc-400">
@@ -242,8 +256,24 @@ export default function AdminDashboard() {
                             Loading pending services...
                         </p>
                     </div>
-                ) : error ? null : services.length === 0 ? (
+                ) : error ? (
+                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                        <h3 className="text-xl font-semibold">
+                            Unable to Load Services
+                        </h3>
 
+                        <p className="mt-2 text-sm text-zinc-400">
+                            Please check your connection and try again.
+                        </p>
+
+                        <button
+                            onClick={fetchPendingServices}
+                            className="mt-5 rounded-xl bg-orange-500 px-6 py-3 font-semibold text-black transition hover:bg-orange-400"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : services.length === 0 ? (
                     /* Empty State */
                     <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
                         <div className="mb-4 text-5xl">🛠️</div>
@@ -257,7 +287,6 @@ export default function AdminDashboard() {
                         </p>
                     </div>
                 ) : (
-
                     /* Service Cards */
                     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {services.map((service) => (
@@ -298,18 +327,24 @@ export default function AdminDashboard() {
 
                                     <div className="mt-5 space-y-2 border-t border-white/10 pt-4 text-sm text-zinc-400">
                                         <p>
-                                            <span className="text-white">Price:</span>{" "}
+                                            <span className="text-white">
+                                                Price:
+                                            </span>{" "}
                                             {service.basePrice}
                                         </p>
 
                                         <p>
-                                            <span className="text-white">Mode:</span>{" "}
+                                            <span className="text-white">
+                                                Mode:
+                                            </span>{" "}
                                             {service.serviceMode}
                                         </p>
 
                                         {service.technicianEmail && (
                                             <p className="break-all">
-                                                <span className="text-white">Technician:</span>{" "}
+                                                <span className="text-white">
+                                                    Technician:
+                                                </span>{" "}
                                                 {service.technicianEmail}
                                             </p>
                                         )}
@@ -319,10 +354,13 @@ export default function AdminDashboard() {
                                     <div className="mt-6 grid grid-cols-2 gap-3">
                                         <button
                                             onClick={() =>
-                                                updateService(service._id, "approve")
+                                                updateService(
+                                                    service._id,
+                                                    "approve"
+                                                )
                                             }
                                             disabled={processingId !== ""}
-                                            className="rounded-xl bg-green-600 px-3 py-3 text-sm font-semibold text-white transition hover:bg-green-500 disabled:opacity-50"
+                                            className="rounded-xl bg-green-600 px-3 py-3 text-sm font-semibold text-white transition hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {processingId === service._id
                                                 ? "Processing..."
@@ -331,10 +369,13 @@ export default function AdminDashboard() {
 
                                         <button
                                             onClick={() =>
-                                                updateService(service._id, "reject")
+                                                updateService(
+                                                    service._id,
+                                                    "reject"
+                                                )
                                             }
                                             disabled={processingId !== ""}
-                                            className="rounded-xl bg-red-600/15 px-3 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+                                            className="rounded-xl bg-red-600/15 px-3 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {processingId === service._id
                                                 ? "Processing..."
