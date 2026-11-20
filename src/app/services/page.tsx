@@ -2,77 +2,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const services = [
-    {
-        id: "1",
-        title: "Smartphone Screen Repair",
-        category: "Smartphone",
-        mode: "Home Visit",
-        area: "Dhaka",
-        price: 800,
-        technician: "Rahim Ahmed",
-        image: "📱",
-        createdAt: "2026-11-18",
-    },
-    {
-        id: "2",
-        title: "Laptop Hardware Repair",
-        category: "Laptop & PC",
-        mode: "Drop-off",
-        area: "Mirpur, Dhaka",
-        price: 1200,
-        technician: "Karim Hasan",
-        image: "💻",
-        createdAt: "2026-11-17",
-    },
-    {
-        id: "3",
-        title: "Air Conditioner Servicing",
-        category: "AC",
-        mode: "Home Visit",
-        area: "Uttara, Dhaka",
-        price: 1500,
-        technician: "Sakib Khan",
-        image: "❄️",
-        createdAt: "2026-11-16",
-    },
-    {
-        id: "4",
-        title: "Refrigerator Repair",
-        category: "Refrigerator",
-        mode: "Home Visit",
-        area: "Dhanmondi, Dhaka",
-        price: 1000,
-        technician: "Hasan Mahmud",
-        image: "🧊",
-        createdAt: "2026-11-15",
-    },
-    {
-        id: "5",
-        title: "LED TV Repair",
-        category: "TV",
-        mode: "Drop-off",
-        area: "Mohammadpur, Dhaka",
-        price: 900,
-        technician: "Rifat Islam",
-        image: "📺",
-        createdAt: "2026-11-14",
-    },
-    {
-        id: "6",
-        title: "Washing Machine Repair",
-        category: "Washing Machine",
-        mode: "Home Visit",
-        area: "Badda, Dhaka",
-        price: 1300,
-        technician: "Nayeem Hossain",
-        image: "🫧",
-        createdAt: "2026-11-13",
-    },
-];
+type Service = {
+    _id: string;
+    title: string;
+    description?: string;
+    category: string;
+    serviceMode: string;
+    basePrice: number;
+    image?: string;
+    area?: string;
+    serviceArea?: string;
+    technicianName?: string;
+    technician?: string;
+    createdAt: string;
+};
 
 const categories = [
     "All Categories",
@@ -84,6 +30,20 @@ const categories = [
     "Washing Machine",
     "Electrical",
 ];
+
+function getServiceIcon(category: string) {
+    const value = category.toLowerCase();
+
+    if (value.includes("laptop") || value.includes("computer")) return "💻";
+    if (value.includes("phone") || value.includes("smartphone")) return "📱";
+    if (value.includes("ac") || value.includes("air conditioner")) return "❄️";
+    if (value.includes("refrigerator")) return "🧊";
+    if (value.includes("tv")) return "📺";
+    if (value.includes("washing")) return "🫧";
+    if (value.includes("electrical")) return "⚡";
+
+    return "🔧";
+}
 
 function ServicesContent() {
     const router = useRouter();
@@ -104,6 +64,10 @@ function ServicesContent() {
     const [sort, setSort] = useState(
         searchParams.get("sort") || "newest"
     );
+
+    const [services, setServices] = useState<Service[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     // Restore filters when URL changes
     useEffect(() => {
@@ -134,6 +98,7 @@ function ServicesContent() {
         }
 
         const queryString = params.toString();
+
         const newUrl = queryString
             ? `/services?${queryString}`
             : "/services";
@@ -148,47 +113,91 @@ function ServicesContent() {
         }
     }, [search, category, mode, sort, router, searchParams]);
 
-    const filteredServices = useMemo(() => {
-        let result = [...services];
+    // Fetch services from Backend API
+    useEffect(() => {
+        const controller = new AbortController();
 
-        // Search
-        if (search.trim()) {
-            result = result.filter((service) =>
-                `${service.title} ${service.category}`
-                    .toLowerCase()
-                    .includes(search.trim().toLowerCase())
-            );
-        }
+        const fetchServices = async () => {
+            try {
+                setLoading(true);
+                setError("");
 
-        // Category filter
-        if (category !== "All Categories") {
-            result = result.filter(
-                (service) => service.category === category
-            );
-        }
+                const params = new URLSearchParams();
 
-        // Service mode filter
-        if (mode !== "All Modes") {
-            result = result.filter(
-                (service) => service.mode === mode
-            );
-        }
+                if (search.trim()) {
+                    params.set("search", search.trim());
+                }
 
-        // Sorting
-        if (sort === "low-high") {
-            result.sort((a, b) => a.price - b.price);
-        } else if (sort === "high-low") {
-            result.sort((a, b) => b.price - a.price);
-        } else {
-            result.sort(
-                (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-            );
-        }
+                if (category !== "All Categories") {
+                    params.set("category", category);
+                }
 
-        return result;
+                if (mode !== "All Modes") {
+                    params.set(
+                        "mode",
+                        mode === "Home Visit" ? "On-site" : mode
+                    );
+                }
+
+                params.set("sort", sort);
+
+                const API_URL =
+                    process.env.NEXT_PUBLIC_API_URL ||
+                    "http://localhost:5000";
+
+                const response = await fetch(
+                    `${API_URL}/api/services?${params.toString()}`,
+                    {
+                        signal: controller.signal,
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch services from server.");
+                }
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(
+                        result.message || "Unable to load services."
+                    );
+                }
+
+                setServices(result.data || []);
+            } catch (err) {
+                if (err instanceof Error && err.name === "AbortError") {
+                    return;
+                }
+
+                console.error("Services fetch error:", err);
+
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Something went wrong."
+                );
+
+                setServices([]);
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchServices();
+
+        return () => controller.abort();
     }, [search, category, mode, sort]);
+
+    // Dynamic categories from database
+    const availableCategories = [
+        ...new Set([
+            ...categories,
+            ...services.map((service) => service.category),
+        ]),
+    ];
 
     const resetFilters = () => {
         setSearch("");
@@ -295,7 +304,7 @@ function ServicesContent() {
                                 onChange={(e) => setCategory(e.target.value)}
                                 className="w-full cursor-pointer rounded-xl border border-white/10 bg-[#090909] px-4 py-3.5 text-sm text-white outline-none transition duration-300 hover:border-orange-500/30 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10"
                             >
-                                {categories.map((item) => (
+                                {availableCategories.map((item) => (
                                     <option key={item} value={item}>
                                         {item}
                                     </option>
@@ -367,18 +376,46 @@ function ServicesContent() {
 
                     <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 px-4 py-2.5">
                         <p className="text-sm font-semibold text-orange-400">
-                            {filteredServices.length} services found
+                            {loading ? "Loading..." : `${services.length} services found`}
                         </p>
                     </div>
                 </div>
 
-                {/* Service Cards */}
-                {filteredServices.length > 0 ? (
+                {/* Loading */}
+                {loading ? (
+                    <div className="rounded-2xl border border-orange-500/20 bg-[#151515] px-5 py-20 text-center">
+                        <div className="mx-auto mb-5 h-10 w-10 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
+                        <p className="text-sm font-semibold text-orange-400">
+                            Loading repair services...
+                        </p>
+                    </div>
+                ) : error ? (
+                    /* API Error */
+                    <div className="rounded-2xl border border-red-500/30 bg-red-500/5 px-5 py-16 text-center">
+                        <div className="mb-5 text-5xl">⚠️</div>
+
+                        <h3 className="mb-3 text-2xl font-bold text-white">
+                            Unable to Load Services
+                        </h3>
+
+                        <p className="mx-auto mb-7 max-w-md text-sm leading-7 text-zinc-400">
+                            {error}
+                        </p>
+
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="rounded-xl bg-orange-500 px-7 py-3 text-sm font-bold text-white transition duration-300 hover:bg-orange-600"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : services.length > 0 ? (
+                    /* Service Cards */
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-                        {filteredServices.map((service) => (
+                        {services.map((service) => (
                             <div
-                                key={service.id}
+                                key={service._id}
                                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1a1a] via-[#111111] to-[#17100d] transition duration-300 hover:-translate-y-2 hover:border-orange-500/50 hover:shadow-[0_15px_40px_rgba(249,115,22,0.10)]"
                             >
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-500/[0.04] via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
@@ -386,9 +423,17 @@ function ServicesContent() {
                                 <div className="relative flex h-48 items-center justify-center overflow-hidden border-b border-white/5 bg-gradient-to-br from-[#242424] via-[#191919] to-[#291307]">
                                     <div className="absolute h-32 w-32 rounded-full bg-orange-500/10 blur-3xl transition duration-500 group-hover:bg-orange-500/20" />
 
-                                    <span className="relative text-7xl transition duration-500 group-hover:scale-125 group-hover:-rotate-3">
-                                        {service.image}
-                                    </span>
+                                    {service.image?.startsWith("http") ? (
+                                        <img
+                                            src={service.image}
+                                            alt={service.title}
+                                            className="relative h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                        />
+                                    ) : (
+                                        <span className="relative text-7xl transition duration-500 group-hover:scale-125 group-hover:-rotate-3">
+                                            {service.image || getServiceIcon(service.category)}
+                                        </span>
+                                    )}
 
                                     <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-orange-500 transition-all duration-500 group-hover:w-full" />
                                 </div>
@@ -400,7 +445,9 @@ function ServicesContent() {
                                         </span>
 
                                         <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-400">
-                                            {service.mode}
+                                            {service.serviceMode === "On-site"
+                                                ? "Home Visit"
+                                                : service.serviceMode}
                                         </span>
                                     </div>
 
@@ -414,7 +461,7 @@ function ServicesContent() {
                                             <span className="text-zinc-500">
                                                 Service Area:
                                             </span>
-                                            {service.area}
+                                            {service.area || service.serviceArea || "Not specified"}
                                         </p>
 
                                         <p className="flex items-center gap-2">
@@ -422,7 +469,7 @@ function ServicesContent() {
                                             <span className="text-zinc-500">
                                                 Technician:
                                             </span>
-                                            {service.technician}
+                                            {service.technicianName || service.technician || "Not specified"}
                                         </p>
                                     </div>
 
@@ -435,12 +482,12 @@ function ServicesContent() {
                                             </p>
 
                                             <p className="text-2xl font-extrabold text-orange-500">
-                                                ৳{service.price}
+                                                ৳{service.basePrice}
                                             </p>
                                         </div>
 
                                         <Link
-                                            href={`/services/${service.id}`}
+                                            href={`/services/${service._id}`}
                                             className="rounded-xl border border-orange-500 bg-orange-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-orange-500/10 transition duration-300 hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-orange-500/25"
                                         >
                                             View Details →
@@ -451,6 +498,7 @@ function ServicesContent() {
                         ))}
                     </div>
                 ) : (
+                    /* No Services Found */
                     <div className="relative overflow-hidden rounded-2xl border border-dashed border-orange-500/30 bg-gradient-to-br from-[#191919] to-[#120d09] px-5 py-20 text-center">
                         <div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500/10 blur-3xl" />
 
