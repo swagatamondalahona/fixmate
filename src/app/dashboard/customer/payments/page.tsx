@@ -116,22 +116,12 @@ export default function CustomerPaymentsPage() {
         0
     );
 
-    // Use the same currency as the payment records.
-    const paymentCurrency = payments[0]?.currency || "bdt";
-
-    const formatAmount = (
-        amount: number,
-        currency = "bdt"
-    ) => {
-        try {
-            return new Intl.NumberFormat("en-BD", {
-                style: "currency",
-                currency: currency.toUpperCase(),
-                maximumFractionDigits: 2,
-            }).format(amount);
-        } catch {
-            return `${currency.toUpperCase()} ${amount.toFixed(2)}`;
-        }
+    // Display all payment amounts in Bangladeshi Taka.
+    const formatAmount = (amount: number) => {
+        return `৳${amount.toLocaleString("en-BD", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}`;
     };
 
     const formatDate = (date?: string) => {
@@ -206,7 +196,7 @@ export default function CustomerPaymentsPage() {
                         </p>
 
                         <h2 className="mt-3 text-3xl font-bold text-orange-500">
-                            {formatAmount(totalAmount, paymentCurrency)}
+                            {formatAmount(totalAmount)}
                         </h2>
 
                         <p className="mt-2 text-xs text-gray-500">
@@ -308,8 +298,7 @@ export default function CustomerPaymentsPage() {
 
                                             <td className="px-6 py-5 font-bold text-orange-500">
                                                 {formatAmount(
-                                                    Number(payment.amount || 0),
-                                                    payment.currency || "bdt"
+                                                    Number(payment.amount || 0)
                                                 )}
                                             </td>
 
