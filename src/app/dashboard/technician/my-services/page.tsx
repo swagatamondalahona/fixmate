@@ -650,10 +650,10 @@ export default function MyServicesPage() {
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-gray-300">
                                         Estimated Duration
+                                        <span className="ml-2 text-xs text-gray-500">(Optional)</span>
                                     </label>
                                     <input
                                         type="text"
-                                        required
                                         value={formData.estimatedDuration}
                                         onChange={(e) => handleInputChange("estimatedDuration", e.target.value)}
                                         className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
@@ -664,10 +664,10 @@ export default function MyServicesPage() {
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-gray-300">
                                     Service Area
+                                    <span className="ml-2 text-xs text-gray-500">(Optional)</span>
                                 </label>
                                 <input
                                     type="text"
-                                    required
                                     value={formData.serviceArea}
                                     onChange={(e) => handleInputChange("serviceArea", e.target.value)}
                                     className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
