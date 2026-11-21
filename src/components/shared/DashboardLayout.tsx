@@ -60,10 +60,7 @@ export default function DashboardLayout({
             return;
         }
 
-        if (
-            role &&
-            ["admin", "customer", "technician"].includes(role)
-        ) {
+        if (role && ["admin", "customer", "technician"].includes(role)) {
             const rolePath = `/dashboard/${role}`;
 
             if (
@@ -99,10 +96,10 @@ export default function DashboardLayout({
 
     if (isPending || !session || !role) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-black">
+            <div className="flex min-h-screen items-center justify-center bg-zinc-100 text-zinc-900 dark:bg-black dark:text-white">
                 <div className="text-center">
-                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-white/10 border-t-orange-500" />
-                    <p className="mt-4 text-sm text-gray-400">
+                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-zinc-300 border-t-orange-500 dark:border-white/10 dark:border-t-orange-500" />
+                    <p className="mt-4 text-sm text-zinc-500 dark:text-gray-400">
                         Loading dashboard...
                     </p>
                 </div>
@@ -114,13 +111,14 @@ export default function DashboardLayout({
 
     if (!roleMenus) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-black text-white">
+            <div className="flex min-h-screen items-center justify-center bg-zinc-100 text-zinc-900 dark:bg-black dark:text-white">
                 <p>Invalid user role. Please contact administrator.</p>
             </div>
         );
     }
 
     const displayName = user?.name || "FixMate User";
+
     const initials = displayName
         .split(" ")
         .map((part) => part[0])
@@ -129,11 +127,12 @@ export default function DashboardLayout({
         .toUpperCase();
 
     return (
-        <div className="relative flex min-h-screen overflow-hidden bg-[#080808] text-white">
+        <div className="relative flex min-h-screen overflow-hidden bg-zinc-100 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white">
+
             {/* Background Watermark */}
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed bottom-0 right-0 z-0 select-none text-[320px] font-black leading-none text-white/[0.015]"
+                className="pointer-events-none fixed bottom-0 right-0 z-0 select-none text-[320px] font-black leading-none text-zinc-900/[0.03] dark:text-white/[0.015]"
             >
                 ⚙
             </div>
@@ -144,17 +143,16 @@ export default function DashboardLayout({
                     type="button"
                     aria-label="Close sidebar"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                 />
             )}
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-[#0d0d0d] transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-                    }`}
+                className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-zinc-200 bg-white transition-colors duration-300 dark:border-white/10 dark:bg-[#0d0d0d] ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0`}
             >
                 {/* Logo */}
-                <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
+                <div className="flex h-20 items-center justify-between border-b border-zinc-200 px-6 dark:border-white/10">
                     <Link
                         href="/"
                         className="flex items-center gap-3"
@@ -165,7 +163,7 @@ export default function DashboardLayout({
                             alt="FixMate"
                             className="h-12 w-9 object-contain"
                         />
-                        <span className="text-2xl font-extrabold">
+                        <span className="text-2xl font-extrabold text-zinc-900 dark:text-white">
                             Fix<span className="text-orange-500">Mate</span>
                         </span>
                     </Link>
@@ -173,7 +171,7 @@ export default function DashboardLayout({
                     <button
                         type="button"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="text-xl text-gray-400 hover:text-orange-500 lg:hidden"
+                        className="text-xl text-zinc-500 hover:text-orange-500 dark:text-gray-400 lg:hidden"
                         aria-label="Close menu"
                     >
                         ✕
@@ -182,12 +180,13 @@ export default function DashboardLayout({
 
                 {/* Role */}
                 <div className="px-6 py-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-gray-500">
                         Workspace
                     </p>
+
                     <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1.5">
                         <span className="h-2 w-2 rounded-full bg-orange-500" />
-                        <span className="text-xs font-bold capitalize text-orange-400">
+                        <span className="text-xs font-bold capitalize text-orange-500 dark:text-orange-400">
                             {role} Panel
                         </span>
                     </div>
@@ -195,7 +194,7 @@ export default function DashboardLayout({
 
                 {/* Navigation */}
                 <nav className="flex-1 space-y-2 overflow-y-auto px-4 pb-6">
-                    <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-widest text-gray-600">
+                    <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-gray-600">
                         Menu
                     </p>
 
@@ -211,14 +210,16 @@ export default function DashboardLayout({
                                 href={item.href}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all ${active
-                                        ? "border border-orange-500/20 bg-orange-500/10 text-orange-400"
-                                        : "text-gray-400 hover:bg-white/5 hover:text-white"
+                                        ? "border border-orange-500/20 bg-orange-500/10 text-orange-500 dark:text-orange-400"
+                                        : "text-zinc-600 hover:bg-zinc-100 hover:text-orange-500 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
                                     }`}
                             >
                                 <span className="w-6 text-center text-lg">
                                     {item.icon}
                                 </span>
+
                                 {item.label}
+
                                 {active && (
                                     <span className="ml-auto h-2 w-2 rounded-full bg-orange-500" />
                                 )}
@@ -228,10 +229,10 @@ export default function DashboardLayout({
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="border-t border-white/10 p-5">
+                <div className="border-t border-zinc-200 p-5 dark:border-white/10">
                     <Link
                         href="/"
-                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-gray-400 transition hover:bg-white/5 hover:text-orange-400"
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-zinc-600 transition hover:bg-zinc-100 hover:text-orange-500 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-orange-400"
                     >
                         <span className="text-lg">←</span>
                         Back to Website
@@ -241,23 +242,25 @@ export default function DashboardLayout({
 
             {/* Main Dashboard */}
             <div className="relative z-10 flex min-w-0 flex-1 flex-col">
+
                 {/* Topbar */}
-                <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/10 bg-[#0b0b0b]/95 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+                <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-zinc-200 bg-white/95 px-4 backdrop-blur-md transition-colors duration-300 sm:px-6 lg:px-8 dark:border-white/10 dark:bg-[#0b0b0b]/95">
                     <div className="flex items-center gap-4">
                         <button
                             type="button"
                             onClick={() => setMobileMenuOpen(true)}
                             aria-label="Open sidebar"
-                            className="rounded-lg border border-white/10 px-3 py-2 text-xl text-white hover:border-orange-500 hover:text-orange-500 lg:hidden"
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-xl text-zinc-800 hover:border-orange-500 hover:text-orange-500 dark:border-white/10 dark:text-white lg:hidden"
                         >
                             ☰
                         </button>
 
                         <div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-zinc-500 dark:text-gray-500">
                                 FixMate Dashboard
                             </p>
-                            <h1 className="text-sm font-bold capitalize text-white sm:text-base">
+
+                            <h1 className="text-sm font-bold capitalize text-zinc-900 dark:text-white sm:text-base">
                                 {role} Panel
                             </h1>
                         </div>
@@ -275,16 +278,17 @@ export default function DashboardLayout({
                                     className="h-10 w-10 rounded-full border border-orange-500/40 object-cover"
                                 />
                             ) : (
-                                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/10 text-sm font-bold text-orange-400">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-orange-500/40 bg-orange-500/10 text-sm font-bold text-orange-500 dark:text-orange-400">
                                     {initials}
                                 </span>
                             )}
 
                             <span className="hidden text-left sm:block">
-                                <span className="block max-w-36 truncate text-sm font-semibold text-white">
+                                <span className="block max-w-36 truncate text-sm font-semibold text-zinc-900 dark:text-white">
                                     {displayName}
                                 </span>
-                                <span className="block text-xs capitalize text-gray-500">
+
+                                <span className="block text-xs capitalize text-zinc-500 dark:text-gray-500">
                                     {role}
                                 </span>
                             </span>
@@ -294,7 +298,7 @@ export default function DashboardLayout({
                             type="button"
                             onClick={handleSignOut}
                             disabled={signingOut}
-                            className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-orange-500 hover:text-orange-400 disabled:opacity-50 sm:px-4 sm:text-sm"
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:border-orange-500 hover:text-orange-500 disabled:opacity-50 sm:px-4 sm:text-sm dark:border-white/10 dark:text-gray-300 dark:hover:text-orange-400"
                         >
                             {signingOut ? "Signing Out..." : "Sign Out"}
                         </button>
@@ -302,7 +306,7 @@ export default function DashboardLayout({
                 </header>
 
                 {/* Page Content */}
-                <main className="w-full flex-1 p-4 sm:p-6 lg:p-8">
+                <main className="w-full flex-1 bg-transparent p-4 transition-colors duration-300 sm:p-6 lg:p-8">
                     {children}
                 </main>
             </div>

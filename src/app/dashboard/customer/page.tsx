@@ -275,17 +275,17 @@ export default function CustomerDashboardPage() {
     const getStatusStyle = (status: Booking["status"]) => {
         const styles: Record<Booking["status"], string> = {
             requested:
-                "border-yellow-500/30 bg-yellow-500/10 text-yellow-400",
+                "border-yellow-500/30 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
             accepted:
-                "border-blue-500/30 bg-blue-500/10 text-blue-400",
+                "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
             rejected:
-                "border-red-500/30 bg-red-500/10 text-red-400",
+                "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
             "in-progress":
-                "border-purple-500/30 bg-purple-500/10 text-purple-400",
+                "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
             completed:
-                "border-green-500/30 bg-green-500/10 text-green-400",
+                "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400",
             cancelled:
-                "border-gray-500/30 bg-gray-500/10 text-gray-400",
+                "border-gray-500/30 bg-gray-500/10 text-gray-600 dark:text-gray-400",
         };
 
         return styles[status] || styles.requested;
@@ -307,7 +307,7 @@ export default function CustomerDashboardPage() {
     };
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-12 text-white sm:px-6 lg:px-8">
+        <main className="relative min-h-screen overflow-hidden bg-zinc-100 px-4 py-12 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white sm:px-6 lg:px-8">
 
             {/* Background Watermark */}
             <div
@@ -331,7 +331,7 @@ export default function CustomerDashboardPage() {
 
                 {/* Header */}
                 <div className="mb-10">
-                    <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-500">
+                    <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-600 dark:text-orange-500">
                         FixMate Customer Panel
                     </p>
 
@@ -339,7 +339,7 @@ export default function CustomerDashboardPage() {
                         My Dashboard
                     </h1>
 
-                    <p className="mt-3 text-gray-400">
+                    <p className="mt-3 text-zinc-600 dark:text-gray-400">
                         Track your service bookings, manage requests and
                         complete payments.
                     </p>
@@ -347,14 +347,14 @@ export default function CustomerDashboardPage() {
                     <div className="mt-6 flex flex-wrap gap-3">
                         <Link
                             href="/dashboard/customer/bookings"
-                            className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:border-orange-500 hover:text-orange-400"
+                            className="rounded-lg border border-zinc-300 bg-white/70 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:border-orange-500 hover:text-orange-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:text-orange-400"
                         >
                             My Bookings →
                         </Link>
 
                         <Link
                             href="/dashboard/customer/payments"
-                            className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:border-orange-500 hover:text-orange-400"
+                            className="rounded-lg border border-zinc-300 bg-white/70 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:border-orange-500 hover:text-orange-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:text-orange-400"
                         >
                             Payment History →
                         </Link>
@@ -367,29 +367,29 @@ export default function CustomerDashboardPage() {
                         {
                             title: "Total Bookings",
                             value: bookings.length,
-                            color: "text-orange-400",
+                            color: "text-orange-600 dark:text-orange-400",
                         },
                         {
                             title: "Pending Requests",
                             value: requestedCount,
-                            color: "text-yellow-400",
+                            color: "text-yellow-600 dark:text-yellow-400",
                         },
                         {
                             title: "Accepted Bookings",
                             value: acceptedCount,
-                            color: "text-blue-400",
+                            color: "text-blue-600 dark:text-blue-400",
                         },
                         {
                             title: "Completed Bookings",
                             value: completedCount,
-                            color: "text-green-400",
+                            color: "text-green-600 dark:text-green-400",
                         },
                     ].map((item) => (
                         <div
                             key={item.title}
-                            className="rounded-2xl border border-white/10 bg-[#111111]/95 p-6 shadow-xl backdrop-blur-sm"
+                            className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl backdrop-blur-sm dark:border-white/10 dark:bg-[#111111]/95"
                         >
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-zinc-600 dark:text-gray-400">
                                 {item.title}
                             </p>
 
@@ -409,7 +409,7 @@ export default function CustomerDashboardPage() {
                             My Bookings
                         </h2>
 
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-zinc-500 dark:text-gray-500">
                             View and manage all your service requests.
                         </p>
                     </div>
@@ -417,7 +417,7 @@ export default function CustomerDashboardPage() {
                     <button
                         onClick={fetchBookings}
                         disabled={loading}
-                        className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-5 py-2.5 text-sm font-semibold text-orange-400 transition hover:bg-orange-500/20 disabled:opacity-50"
+                        className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-5 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-400"
                     >
                         {loading ? "Refreshing..." : "↻ Refresh"}
                     </button>
@@ -427,7 +427,7 @@ export default function CustomerDashboardPage() {
                 {error && (
                     <div
                         role="alert"
-                        className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+                        className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400"
                     >
                         {error}
                     </div>
@@ -437,19 +437,19 @@ export default function CustomerDashboardPage() {
                 {message && (
                     <div
                         role="status"
-                        className="mb-6 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400"
+                        className="mb-6 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-700 dark:text-green-400"
                     >
                         {message}
                     </div>
                 )}
 
-                {/* Loading */}
+                {/* Loading / Empty / Bookings */}
                 {loading ? (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111] p-12 text-center text-orange-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center text-orange-600 dark:border-white/10 dark:bg-[#111111] dark:text-orange-400">
                         Loading Your Bookings...
                     </div>
                 ) : bookings.length === 0 ? (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111]/95 px-6 py-16 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 px-6 py-16 text-center dark:border-white/10 dark:bg-[#111111]/95">
                         <div className="mb-4 text-5xl">
                             📋
                         </div>
@@ -458,7 +458,7 @@ export default function CustomerDashboardPage() {
                             No Bookings Found
                         </h3>
 
-                        <p className="mt-2 text-sm text-gray-400">
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-gray-400">
                             You have not booked any services yet.
                         </p>
 
@@ -474,12 +474,12 @@ export default function CustomerDashboardPage() {
                         {bookings.map((booking) => (
                             <div
                                 key={booking._id}
-                                className="rounded-2xl border border-white/10 bg-[#111111]/95 p-6 shadow-xl backdrop-blur-sm transition hover:border-orange-500/30 sm:p-8"
+                                className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl backdrop-blur-sm transition hover:border-orange-500/30 sm:p-8 dark:border-white/10 dark:bg-[#111111]/95"
                             >
                                 {/* Card Header */}
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div>
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+                                        <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">
                                             Service Booking
                                         </p>
 
@@ -498,10 +498,10 @@ export default function CustomerDashboardPage() {
                                 </div>
 
                                 {/* Booking Information */}
-                                <div className="mt-7 grid gap-5 border-t border-white/10 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="mt-7 grid gap-5 border-t border-zinc-200 pt-6 sm:grid-cols-2 lg:grid-cols-3 dark:border-white/10">
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Technician Email
                                         </p>
 
@@ -512,7 +512,7 @@ export default function CustomerDashboardPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Booking Date
                                         </p>
 
@@ -522,11 +522,11 @@ export default function CustomerDashboardPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Base Price
                                         </p>
 
-                                        <p className="mt-2 font-bold text-orange-400">
+                                        <p className="mt-2 font-bold text-orange-600 dark:text-orange-400">
                                             ৳
                                             {Number(
                                                 booking.basePrice || 0
@@ -535,7 +535,7 @@ export default function CustomerDashboardPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Service Address
                                         </p>
 
@@ -545,14 +545,14 @@ export default function CustomerDashboardPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Payment Status
                                         </p>
 
                                         <p
                                             className={`mt-2 font-semibold capitalize ${booking.paymentStatus === "paid"
-                                                    ? "text-green-400"
-                                                    : "text-yellow-400"
+                                                ? "text-green-600 dark:text-green-400"
+                                                : "text-yellow-600 dark:text-yellow-400"
                                                 }`}
                                         >
                                             {booking.paymentStatus || "unpaid"}
@@ -560,11 +560,11 @@ export default function CustomerDashboardPage() {
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Final Amount
                                         </p>
 
-                                        <p className="mt-2 font-medium text-green-400">
+                                        <p className="mt-2 font-medium text-green-600 dark:text-green-400">
                                             {booking.finalAmount !== null &&
                                                 booking.finalAmount !== undefined
                                                 ? `৳${Number(
@@ -577,19 +577,19 @@ export default function CustomerDashboardPage() {
 
                                 {/* Customer Notes */}
                                 {booking.notes && (
-                                    <div className="mt-6 rounded-xl border border-white/5 bg-black/30 p-4">
-                                        <p className="text-xs text-gray-500">
+                                    <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-100/70 p-4 dark:border-white/5 dark:bg-black/30">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Your Notes
                                         </p>
 
-                                        <p className="mt-2 text-sm leading-6 text-gray-300">
+                                        <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-gray-300">
                                             {booking.notes}
                                         </p>
                                     </div>
                                 )}
 
                                 {/* Booking Actions */}
-                                <div className="mt-7 flex flex-wrap gap-3 border-t border-white/10 pt-6">
+                                <div className="mt-7 flex flex-wrap gap-3 border-t border-zinc-200 pt-6 dark:border-white/10">
 
                                     {booking.status === "requested" && (
                                         <button
@@ -599,7 +599,7 @@ export default function CustomerDashboardPage() {
                                             disabled={
                                                 updatingId === booking._id
                                             }
-                                            className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-600 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
                                         >
                                             {updatingId === booking._id
                                                 ? "Cancelling..."
@@ -625,25 +625,25 @@ export default function CustomerDashboardPage() {
                                         )}
 
                                     {booking.paymentStatus === "paid" && (
-                                        <span className="rounded-lg border border-green-500/30 bg-green-500/10 px-6 py-3 text-sm font-bold text-green-400">
+                                        <span className="rounded-lg border border-green-500/30 bg-green-500/10 px-6 py-3 text-sm font-bold text-green-700 dark:text-green-400">
                                             ✓ Payment Completed
                                         </span>
                                     )}
 
                                     {booking.status === "in-progress" && (
-                                        <p className="text-sm text-purple-400">
+                                        <p className="text-sm text-purple-600 dark:text-purple-400">
                                             Your service is currently in progress.
                                         </p>
                                     )}
 
                                     {booking.status === "rejected" && (
-                                        <p className="text-sm text-red-400">
+                                        <p className="text-sm text-red-600 dark:text-red-400">
                                             This booking request was rejected.
                                         </p>
                                     )}
 
                                     {booking.status === "cancelled" && (
-                                        <p className="text-sm text-gray-400">
+                                        <p className="text-sm text-zinc-600 dark:text-gray-400">
                                             You cancelled this booking.
                                         </p>
                                     )}
@@ -654,7 +654,7 @@ export default function CustomerDashboardPage() {
                 )}
 
                 {/* Footer */}
-                <p className="mt-8 text-center text-xs text-gray-600">
+                <p className="mt-8 text-center text-xs text-zinc-500 dark:text-gray-600">
                     FixMate • Customer Dashboard
                 </p>
             </div>

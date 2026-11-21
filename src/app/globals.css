@@ -3,8 +3,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #e5e7eb;
+  --foreground: #18181b;
 }
 
 @theme inline {
@@ -29,43 +29,16 @@ html[data-theme="light"] {
 }
 
 /* Global Styles */
+html {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.25s ease, color 0.25s ease;
-}
-
-/* Light Mode - Background (Exclude Hero Slider) */
-html[data-theme="light"] body :not([data-theme="dark"]):is(.bg-black) {
-  background-color: #e5e7eb !important;
-}
-
-html[data-theme="light"] body :not([data-theme="dark"]):is(.bg-gray-950) {
-  background-color: #e5e7eb !important;
-}
-
-html[data-theme="light"] body :not([data-theme="dark"]):is(.bg-gray-900) {
-  background-color: #d1d5db !important;
-}
-
-/* Light Mode - Text (Exclude Hero Slider) */
-html[data-theme="light"] body :not([data-theme="dark"]):is(.text-white) {
-  color: #18181b !important;
-}
-
-html[data-theme="light"] body :not([data-theme="dark"]):is(.text-gray-100),
-html[data-theme="light"] body :not([data-theme="dark"]):is(.text-gray-200) {
-  color: #27272a !important;
-}
-
-html[data-theme="light"] body :not([data-theme="dark"]):is(.text-gray-300),
-html[data-theme="light"] body :not([data-theme="dark"]):is(.text-gray-400) {
-  color: #404040 !important;
-}
-
-/* Light Mode - Borders (Exclude Hero Slider) */
-html[data-theme="light"] body :not([data-theme="dark"]):is([class~="border-white/10"]),
-html[data-theme="light"] body :not([data-theme="dark"]):is([class~="border-white/20"]) {
-  border-color: #c4c7ce !important;
 }
