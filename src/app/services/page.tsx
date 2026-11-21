@@ -135,7 +135,7 @@ function ServicesContent() {
                 if (mode !== "All Modes") {
                     params.set(
                         "mode",
-                        mode === "Home Visit" ? "On-site" : mode
+                        mode
                     );
                 }
 
@@ -330,8 +330,8 @@ function ServicesContent() {
                                 className={`${filterInputClass} cursor-pointer`}
                             >
                                 <option value="All Modes">All Modes</option>
-                                <option value="Home Visit">Home Visit</option>
-                                <option value="Drop-off">Drop-off</option>
+                                <option value="On-site">On-site</option>
+                                <option value="Remote">Remote</option>
                             </select>
                         </div>
 
