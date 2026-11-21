@@ -8,7 +8,7 @@ interface Service {
     category: string;
     serviceMode: string;
     basePrice: number;
-    technicianName: string;
+    technicianName?: string;
     image?: string;
 }
 
@@ -18,7 +18,6 @@ interface FeaturedServicesResponse {
 }
 
 export default async function FeaturedServices() {
-    // Defer API request until an actual request comes in.
     await connection();
 
     let services: Service[] = [];
@@ -31,13 +30,10 @@ export default async function FeaturedServices() {
             throw new Error("NEXT_PUBLIC_API_URL is missing");
         }
 
-        const response = await fetch(
-            `${apiUrl}/api/services/featured`,
-            {
-                cache: "no-store",
-                signal: AbortSignal.timeout(10000),
-            }
-        );
+        const response = await fetch(`${apiUrl}/api/services/featured`, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(10000),
+        });
 
         if (!response.ok) {
             throw new Error(
@@ -45,8 +41,7 @@ export default async function FeaturedServices() {
             );
         }
 
-        const result: FeaturedServicesResponse =
-            await response.json();
+        const result: FeaturedServicesResponse = await response.json();
 
         if (result.success && Array.isArray(result.data)) {
             services = result.data;
@@ -57,32 +52,28 @@ export default async function FeaturedServices() {
     }
 
     return (
-        <section className="bg-zinc-50 px-6 py-20 dark:bg-black">
+        <section className="bg-zinc-50 px-4 py-14 sm:px-6 sm:py-16 lg:py-20 dark:bg-black">
             <div className="mx-auto max-w-7xl">
 
-                {/* Section Heading */}
-                <div className="mb-12 text-center">
-                    <span className="font-semibold uppercase tracking-wider text-orange-500">
+                <div className="mb-9 text-center sm:mb-12">
+                    <span className="text-sm font-semibold uppercase tracking-wider text-orange-500">
                         Our Services
                     </span>
 
-                    <h2 className="mt-3 text-3xl font-bold text-zinc-900 dark:text-white md:text-4xl">
+                    <h2 className="mt-3 text-2xl font-bold text-zinc-900 sm:text-3xl md:text-4xl dark:text-white">
                         Featured{" "}
-                        <span className="text-orange-500">
-                            Services
-                        </span>
+                        <span className="text-orange-500">Services</span>
                     </h2>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400">
+                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-600 sm:text-base dark:text-zinc-400">
                         Find reliable repair services for your devices and home
                         appliances from trusted technicians.
                     </p>
                 </div>
 
-                {/* Error State */}
                 {hasError ? (
-                    <div className="rounded-2xl border border-red-300 bg-white px-6 py-16 text-center dark:border-red-900 dark:bg-zinc-900">
-                        <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
+                    <div className="rounded-2xl border border-red-300 bg-white px-4 py-12 text-center sm:px-6 sm:py-16 dark:border-red-900 dark:bg-zinc-900">
+                        <h3 className="text-lg font-bold text-zinc-900 sm:text-xl dark:text-white">
                             Unable to Load Services
                         </h3>
 
@@ -91,65 +82,65 @@ export default async function FeaturedServices() {
                         </p>
                     </div>
                 ) : services.length > 0 ? (
-                    /* Services Grid */
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                         {services.map((service) => (
-                            <div
+                            <article
                                 key={service._id}
-                                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+                                className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
                             >
                                 {service.image && (
                                     <img
                                         src={service.image}
                                         alt={service.title}
-                                        className="h-52 w-full object-cover"
+                                        loading="lazy"
+                                        className="h-44 w-full object-cover sm:h-48 lg:h-52"
                                     />
                                 )}
 
-                                <div className="p-6">
-                                    <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-600 dark:bg-orange-500/10 dark:text-orange-400">
-                                        {service.category}
-                                    </span>
+                                <div className="flex flex-1 flex-col p-4 sm:p-5 lg:p-6">
+                                    <div>
+                                        <span className="inline-block max-w-full truncate rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-600 dark:bg-orange-500/10 dark:text-orange-400">
+                                            {service.category}
+                                        </span>
 
-                                    <h3 className="mt-4 text-xl font-bold text-zinc-900 dark:text-white">
-                                        {service.title}
-                                    </h3>
+                                        <h3 className="mt-4 line-clamp-2 text-lg font-bold text-zinc-900 sm:text-xl dark:text-white">
+                                            {service.title}
+                                        </h3>
 
-                                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                                        Technician: {service.technicianName}
-                                    </p>
+                                        <p className="mt-2 break-words text-sm text-zinc-600 dark:text-zinc-400">
+                                            Technician: {service.technicianName || "Not available"}
+                                        </p>
 
-                                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                                        Mode: {service.serviceMode}
-                                    </p>
+                                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                                            Mode: {service.serviceMode}
+                                        </p>
+                                    </div>
 
-                                    <div className="mt-5 flex items-center justify-between">
+                                    <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
                                         <p className="text-lg font-bold text-orange-500">
-                                            ৳
-                                            {Number(
+                                            ৳{Number(
                                                 service.basePrice || 0
                                             ).toLocaleString("en-BD")}
                                         </p>
 
                                         <Link
                                             href={`/services/${service._id}`}
-                                            className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+                                            className="rounded-lg bg-orange-500 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
                                         >
                                             View Details
                                         </Link>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         ))}
                     </div>
                 ) : (
-                    /* Empty State */
-                    <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900">
+                    <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-12 text-center sm:px-6 sm:py-16 dark:border-zinc-700 dark:bg-zinc-900">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 text-3xl dark:bg-orange-500/10">
                             🔧
                         </div>
 
-                        <h3 className="mt-5 text-xl font-bold text-zinc-900 dark:text-white">
+                        <h3 className="mt-5 text-lg font-bold text-zinc-900 sm:text-xl dark:text-white">
                             No Featured Services Yet
                         </h3>
 
@@ -160,23 +151,21 @@ export default async function FeaturedServices() {
 
                         <Link
                             href="/services"
-                            className="mt-7 inline-block rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white transition hover:bg-orange-600"
+                            className="mt-7 inline-block rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
                         >
                             Browse All Services →
                         </Link>
                     </div>
                 )}
 
-                {/* View All Button */}
-                <div className="mt-10 text-center">
+                <div className="mt-9 text-center sm:mt-10">
                     <Link
                         href="/services"
-                        className="font-semibold text-orange-500 transition hover:text-orange-600"
+                        className="inline-block font-semibold text-orange-500 transition hover:text-orange-600"
                     >
                         View All Services →
                     </Link>
                 </div>
-
             </div>
         </section>
     );
