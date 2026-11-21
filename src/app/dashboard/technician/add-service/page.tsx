@@ -1,0 +1,362 @@
+
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+export default function AddServicePage() {
+    const router = useRouter();
+
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [category, setCategory] = useState("");
+    const [serviceMode, setServiceMode] = useState("");
+    const [basePrice, setBasePrice] = useState("");
+    const [estimatedDuration, setEstimatedDuration] = useState("");
+    const [serviceArea, setServiceArea] = useState("");
+    const [image, setImage] = useState<File | null>(null);
+
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+
+    const inputClass =
+        "w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white placeholder:text-gray-600 outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30";
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        setMessage("");
+        setError("");
+
+        if (!API_URL || !IMGBB_API_KEY) {
+            setError("API URL or ImgBB API key is missing.");
+            return;
+        }
+
+        if (!image) {
+            setError("Please select a service image.");
+            return;
+        }
+
+        if (!basePrice.trim() || !Number.isFinite(Number(basePrice)) || Number(basePrice) < 0) {
+            setError("Please enter a valid service price.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const tokenResponse = await authClient.token();
+            const token = tokenResponse.data?.token;
+
+            if (!token) {
+                throw new Error("Authentication token not found. Please sign in again.");
+            }
+
+            // Upload image to ImgBB
+            const imageFormData = new FormData();
+            imageFormData.append("image", image);
+
+            const imageResponse = await fetch(
+                `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+                {
+                    method: "POST",
+                    body: imageFormData,
+                }
+            );
+
+            const imageData = await imageResponse.json();
+
+            if (!imageResponse.ok || !imageData.success) {
+                throw new Error("Image upload failed. Please try again.");
+            }
+
+            // Submit service to backend
+            const response = await fetch(`${API_URL}/api/services`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    category,
+                    serviceMode,
+                    basePrice: Number(basePrice),
+                    estimatedDuration,
+                    serviceArea,
+                    image: imageData.data.url,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || "Failed to add service.");
+            }
+
+            setMessage("Service submitted successfully! Waiting for admin approval.");
+
+            setTitle("");
+            setDescription("");
+            setCategory("");
+            setServiceMode("");
+            setBasePrice("");
+            setEstimatedDuration("");
+            setServiceArea("");
+            setImage(null);
+
+            const fileInput = document.getElementById(
+                "service-image"
+            ) as HTMLInputElement | null;
+
+            if (fileInput) {
+                fileInput.value = "";
+            }
+
+            router.refresh();
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "Something went wrong. Please try again."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-8 text-white sm:px-6 lg:px-8">
+
+            {/* Background glow */}
+            <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-500/5 blur-[120px]" />
+            <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-orange-500/5 blur-[120px]" />
+
+            {/* Watermark */}
+            <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none">
+                <span className="absolute -left-5 top-32 rotate-[-35deg] text-[180px] text-orange-500/[0.045]">
+                    ⚒
+                </span>
+                <span className="absolute -right-8 top-[35%] rotate-[45deg] text-[200px] text-orange-500/[0.04]">
+                    🔧
+                </span>
+                <span className="absolute bottom-10 left-[30%] rotate-[-25deg] text-[160px] text-orange-500/[0.035]">
+                    ⚙
+                </span>
+            </div>
+
+            <div className="relative z-10 mx-auto max-w-3xl">
+
+                {/* Heading */}
+                <div className="mb-8">
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-2">
+                        <span className="h-2 w-2 rounded-full bg-orange-500" />
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-400">
+                            Technician Workspace
+                        </span>
+                    </div>
+
+                    <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                        Add New <span className="text-orange-500">Service</span>
+                    </h1>
+
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-gray-400 sm:text-base">
+                        Add your repair service details and submit them for admin review and approval.
+                    </p>
+                </div>
+
+                {/* Form */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="rounded-2xl border border-white/10 bg-[#111111]/95 p-5 shadow-2xl shadow-black/30 backdrop-blur-sm sm:p-8"
+                >
+                    <div className="mb-7 flex items-center gap-3 border-b border-white/10 pb-5">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-500">
+                            ⚒
+                        </div>
+                        <div>
+                            <h2 className="font-semibold text-white">Service Information</h2>
+                            <p className="mt-1 text-xs text-gray-500">Fill in the details below</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                                Service Title
+                            </label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(event) => setTitle(event.target.value)}
+                                placeholder="Example: Laptop Repair Service"
+                                required
+                                className={inputClass}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                                Service Description
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(event) => setDescription(event.target.value)}
+                                placeholder="Describe your repair service..."
+                                rows={5}
+                                required
+                                className={`${inputClass} resize-y`}
+                            />
+                        </div>
+
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                    Category
+                                </label>
+                                <input
+                                    type="text"
+                                    value={category}
+                                    onChange={(event) => setCategory(event.target.value)}
+                                    placeholder="Example: Laptop Repair"
+                                    required
+                                    className={inputClass}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                    Service Mode
+                                </label>
+                                <select
+                                    value={serviceMode}
+                                    onChange={(event) => setServiceMode(event.target.value)}
+                                    required
+                                    className={`${inputClass} appearance-none`}
+                                >
+                                    <option value="" className="bg-[#111111]">Select service mode</option>
+                                    <option value="On-site" className="bg-[#111111]">On-site</option>
+                                    <option value="Remote" className="bg-[#111111]">Remote</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                    Estimated Duration
+                                </label>
+                                <input
+                                    type="text"
+                                    value={estimatedDuration}
+                                    onChange={(event) => setEstimatedDuration(event.target.value)}
+                                    placeholder="Example: 2-3 hours"
+                                    required
+                                    className={inputClass}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                    Service Area
+                                </label>
+                                <input
+                                    type="text"
+                                    value={serviceArea}
+                                    onChange={(event) => setServiceArea(event.target.value)}
+                                    placeholder="Example: Dhaka"
+                                    required
+                                    className={inputClass}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                                Base Price
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-orange-500">
+                                    $
+                                </span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={basePrice}
+                                    onChange={(event) => setBasePrice(event.target.value)}
+                                    placeholder="Enter service price"
+                                    required
+                                    className={`${inputClass} pl-9`}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                                Service Image
+                            </label>
+                            <div className="rounded-xl border border-dashed border-white/20 bg-[#080808] p-5 transition hover:border-orange-500/50">
+                                <input
+                                    id="service-image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) => setImage(event.target.files?.[0] || null)}
+                                    required
+                                    className="w-full text-sm text-gray-400 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-500/10 file:px-4 file:py-2.5 file:font-semibold file:text-orange-400 hover:file:bg-orange-500/20"
+                                />
+                                <p className="mt-3 text-xs text-gray-500">
+                                    Select an image. It will be uploaded to ImgBB.
+                                </p>
+                                {image && (
+                                    <p className="mt-2 break-all text-xs text-orange-400">
+                                        Selected: {image.name}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                                {error}
+                            </div>
+                        )}
+
+                        {message && (
+                            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400">
+                                {message}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-orange-500/10 transition hover:bg-orange-600 hover:shadow-orange-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    Submitting Service...
+                                </>
+                            ) : (
+                                <>＋ Submit Service</>
+                            )}
+                        </button>
+
+                        <p className="text-center text-xs text-gray-500">
+                            Your service will remain pending until admin approval.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
