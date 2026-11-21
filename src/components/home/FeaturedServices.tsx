@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-
+import { connection } from "next/server";
 
 interface Service {
     _id: string;
@@ -18,6 +18,8 @@ interface FeaturedServicesResponse {
 }
 
 export default async function FeaturedServices() {
+    // Defer API request until an actual request comes in.
+    await connection();
 
     let services: Service[] = [];
     let hasError = false;
@@ -25,21 +27,26 @@ export default async function FeaturedServices() {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-        console.log("API URL:", apiUrl);
-
         if (!apiUrl) {
             throw new Error("NEXT_PUBLIC_API_URL is missing");
         }
 
         const response = await fetch(
-            `${apiUrl}/api/services/featured`
+            `${apiUrl}/api/services/featured`,
+            {
+                cache: "no-store",
+                signal: AbortSignal.timeout(10000),
+            }
         );
 
         if (!response.ok) {
-            throw new Error("Failed to fetch featured services");
+            throw new Error(
+                `Failed to fetch featured services: ${response.status}`
+            );
         }
 
-        const result: FeaturedServicesResponse = await response.json();
+        const result: FeaturedServicesResponse =
+            await response.json();
 
         if (result.success && Array.isArray(result.data)) {
             services = result.data;
@@ -60,7 +67,10 @@ export default async function FeaturedServices() {
                     </span>
 
                     <h2 className="mt-3 text-3xl font-bold text-zinc-900 dark:text-white md:text-4xl">
-                        Featured <span className="text-orange-500">Services</span>
+                        Featured{" "}
+                        <span className="text-orange-500">
+                            Services
+                        </span>
                     </h2>
 
                     <p className="mx-auto mt-4 max-w-2xl text-zinc-600 dark:text-zinc-400">
@@ -115,7 +125,10 @@ export default async function FeaturedServices() {
 
                                     <div className="mt-5 flex items-center justify-between">
                                         <p className="text-lg font-bold text-orange-500">
-                                            ৳{service.basePrice}
+                                            ৳
+                                            {Number(
+                                                service.basePrice || 0
+                                            ).toLocaleString("en-BD")}
                                         </p>
 
                                         <Link

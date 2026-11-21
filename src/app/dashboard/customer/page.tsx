@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
 type Booking = {
@@ -27,6 +28,13 @@ type Booking = {
     createdAt: string;
 };
 
+type TokenResponse = {
+    token?: unknown;
+    data?: {
+        token?: unknown;
+    } | null;
+};
+
 const API_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -34,42 +42,91 @@ export default function CustomerDashboardPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState("");
+    const [payingId, setPayingId] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [payingId, setPayingId] = useState("");
 
+    // Get Better Auth JWT token
+    const getAuthToken = async (): Promise<string> => {
+        const tokenResponse: unknown = await authClient.token();
+
+        let token = "";
+
+        if (typeof tokenResponse === "string") {
+            token = tokenResponse;
+        } else if (
+            tokenResponse &&
+            typeof tokenResponse === "object"
+        ) {
+            const result = tokenResponse as TokenResponse;
+            const extractedToken =
+                result.data?.token || result.token;
+
+            if (typeof extractedToken === "string") {
+                token = extractedToken;
+            }
+        }
+
+        if (!token || token.split(".").length !== 3) {
+            throw new Error(
+                "Invalid authentication token. Please sign in again."
+            );
+        }
+
+        return token;
+    };
+
+    // Fetch Customer Bookings
     const fetchBookings = useCallback(async () => {
         try {
             setLoading(true);
             setError("");
 
-            const tokenResponse = await authClient.token();
-            const token = tokenResponse.data?.token;
-
-            if (!token) {
-                setError("Authentication token not found. Please sign in again.");
-                return;
-            }
+            const token = await getAuthToken();
 
             const response = await fetch(
                 `${API_URL}/api/bookings/my-bookings`,
                 {
+                    method: "GET",
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
                     },
+                    cache: "no-store",
                 }
             );
 
-            const data = await response.json();
+            const contentType =
+                response.headers.get("content-type") || "";
 
-            if (!response.ok) {
+            if (!contentType.includes("application/json")) {
                 throw new Error(
-                    data.message || "Failed to load your bookings."
+                    "Backend returned an invalid response. Please try again."
                 );
             }
 
-            setBookings(data.bookings || data.data || []);
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
+                throw new Error(
+                    result.message || "Failed to load your bookings."
+                );
+            }
+
+            const bookingData =
+                result.bookings ||
+                result.data?.bookings ||
+                result.data ||
+                [];
+
+            if (!Array.isArray(bookingData)) {
+                throw new Error("Invalid booking data received from server.");
+            }
+
+            setBookings(bookingData);
         } catch (err) {
+            console.error("Customer Bookings Error:", err);
+
             setError(
                 err instanceof Error
                     ? err.message
@@ -84,6 +141,7 @@ export default function CustomerDashboardPage() {
         fetchBookings();
     }, [fetchBookings]);
 
+    // Cancel Booking
     const cancelBooking = async (bookingId: string) => {
         const confirmed = window.confirm(
             "Are you sure you want to cancel this booking?"
@@ -96,12 +154,7 @@ export default function CustomerDashboardPage() {
             setError("");
             setMessage("");
 
-            const tokenResponse = await authClient.token();
-            const token = tokenResponse.data?.token;
-
-            if (!token) {
-                throw new Error("Authentication token not found.");
-            }
+            const token = await getAuthToken();
 
             const response = await fetch(
                 `${API_URL}/api/bookings/${bookingId}/cancel`,
@@ -109,21 +162,31 @@ export default function CustomerDashboardPage() {
                     method: "PATCH",
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
                     },
                 }
             );
 
-            const data = await response.json();
+            const contentType =
+                response.headers.get("content-type") || "";
 
-            if (!response.ok) {
+            if (!contentType.includes("application/json")) {
+                throw new Error("Invalid server response.");
+            }
+
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
                 throw new Error(
-                    data.message || "Failed to cancel booking."
+                    result.message || "Failed to cancel booking."
                 );
             }
 
             setMessage("Booking cancelled successfully!");
             await fetchBookings();
         } catch (err) {
+            console.error("Cancel Booking Error:", err);
+
             setError(
                 err instanceof Error
                     ? err.message
@@ -141,12 +204,7 @@ export default function CustomerDashboardPage() {
             setError("");
             setMessage("");
 
-            const tokenResponse = await authClient.token();
-            const token = tokenResponse.data?.token;
-
-            if (!token) {
-                throw new Error("Authentication token not found.");
-            }
+            const token = await getAuthToken();
 
             const response = await fetch(
                 `${API_URL}/api/payments/create-checkout-session`,
@@ -155,36 +213,53 @@ export default function CustomerDashboardPage() {
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
+                        Accept: "application/json",
                     },
                     body: JSON.stringify({ bookingId }),
                 }
             );
 
-            const data = await response.json();
+            const contentType =
+                response.headers.get("content-type") || "";
 
-            if (!response.ok) {
+            if (!contentType.includes("application/json")) {
+                throw new Error("Invalid payment server response.");
+            }
+
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
                 throw new Error(
-                    data.message || "Unable to start payment."
+                    result.message || "Unable to start payment."
                 );
             }
 
-            const checkoutUrl = data.data?.checkoutUrl;
+            const checkoutUrl = result.data?.checkoutUrl;
 
-            if (!checkoutUrl) {
-                throw new Error("Payment checkout URL was not returned.");
+            if (
+                typeof checkoutUrl !== "string" ||
+                !checkoutUrl.startsWith("https://")
+            ) {
+                throw new Error(
+                    "A valid payment checkout URL was not returned."
+                );
             }
 
             window.location.href = checkoutUrl;
         } catch (err) {
+            console.error("Payment Error:", err);
+
             setError(
                 err instanceof Error
                     ? err.message
                     : "Payment could not be started."
             );
+
             setPayingId("");
         }
     };
 
+    // Booking Statistics
     const requestedCount = bookings.filter(
         (booking) => booking.status === "requested"
     ).length;
@@ -213,12 +288,28 @@ export default function CustomerDashboardPage() {
                 "border-gray-500/30 bg-gray-500/10 text-gray-400",
         };
 
-        return styles[status];
+        return styles[status] || styles.requested;
+    };
+
+    const formatDate = (date: string) => {
+        if (!date) return "Not available";
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return "Not available";
+        }
+
+        return parsedDate.toLocaleString("en-BD", {
+            dateStyle: "medium",
+            timeStyle: "short",
+        });
     };
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-12 text-white sm:px-6 lg:px-8">
-            {/* Repair Tools Watermark */}
+
+            {/* Background Watermark */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none fixed inset-0 overflow-hidden"
@@ -237,6 +328,7 @@ export default function CustomerDashboardPage() {
             </div>
 
             <div className="relative z-10 mx-auto max-w-7xl">
+
                 {/* Header */}
                 <div className="mb-10">
                     <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-500">
@@ -251,6 +343,22 @@ export default function CustomerDashboardPage() {
                         Track your service bookings, manage requests and
                         complete payments.
                     </p>
+
+                    <div className="mt-6 flex flex-wrap gap-3">
+                        <Link
+                            href="/dashboard/customer/bookings"
+                            className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:border-orange-500 hover:text-orange-400"
+                        >
+                            My Bookings →
+                        </Link>
+
+                        <Link
+                            href="/dashboard/customer/payments"
+                            className="rounded-lg border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:border-orange-500 hover:text-orange-400"
+                        >
+                            Payment History →
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Statistics */}
@@ -294,7 +402,7 @@ export default function CustomerDashboardPage() {
                     ))}
                 </div>
 
-                {/* Booking Section */}
+                {/* Booking Section Header */}
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-bold">
@@ -315,7 +423,7 @@ export default function CustomerDashboardPage() {
                     </button>
                 </div>
 
-                {/* Messages */}
+                {/* Error Message */}
                 {error && (
                     <div
                         role="alert"
@@ -325,6 +433,7 @@ export default function CustomerDashboardPage() {
                     </div>
                 )}
 
+                {/* Success Message */}
                 {message && (
                     <div
                         role="status"
@@ -341,7 +450,9 @@ export default function CustomerDashboardPage() {
                     </div>
                 ) : bookings.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-[#111111]/95 px-6 py-16 text-center">
-                        <div className="mb-4 text-5xl">📋</div>
+                        <div className="mb-4 text-5xl">
+                            📋
+                        </div>
 
                         <h3 className="text-xl font-bold">
                             No Bookings Found
@@ -350,6 +461,13 @@ export default function CustomerDashboardPage() {
                         <p className="mt-2 text-sm text-gray-400">
                             You have not booked any services yet.
                         </p>
+
+                        <Link
+                            href="/services"
+                            className="mt-6 inline-block rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-black transition hover:bg-orange-400"
+                        >
+                            Explore Services
+                        </Link>
                     </div>
                 ) : (
                     <div className="grid gap-6">
@@ -381,6 +499,7 @@ export default function CustomerDashboardPage() {
 
                                 {/* Booking Information */}
                                 <div className="mt-7 grid gap-5 border-t border-white/10 pt-6 sm:grid-cols-2 lg:grid-cols-3">
+
                                     <div>
                                         <p className="text-xs text-gray-500">
                                             Technician Email
@@ -398,9 +517,7 @@ export default function CustomerDashboardPage() {
                                         </p>
 
                                         <p className="mt-2 font-medium">
-                                            {new Date(
-                                                booking.bookingDate
-                                            ).toLocaleString("en-BD")}
+                                            {formatDate(booking.bookingDate)}
                                         </p>
                                     </div>
 
@@ -411,9 +528,9 @@ export default function CustomerDashboardPage() {
 
                                         <p className="mt-2 font-bold text-orange-400">
                                             ৳
-                                            {booking.basePrice?.toLocaleString(
-                                                "en-BD"
-                                            )}
+                                            {Number(
+                                                booking.basePrice || 0
+                                            ).toLocaleString("en-BD")}
                                         </p>
                                     </div>
 
@@ -423,7 +540,7 @@ export default function CustomerDashboardPage() {
                                         </p>
 
                                         <p className="mt-2 font-medium">
-                                            {booking.address}
+                                            {booking.address || "Not available"}
                                         </p>
                                     </div>
 
@@ -438,7 +555,7 @@ export default function CustomerDashboardPage() {
                                                     : "text-yellow-400"
                                                 }`}
                                         >
-                                            {booking.paymentStatus}
+                                            {booking.paymentStatus || "unpaid"}
                                         </p>
                                     </div>
 
@@ -448,15 +565,17 @@ export default function CustomerDashboardPage() {
                                         </p>
 
                                         <p className="mt-2 font-medium text-green-400">
-                                            {booking.finalAmount !== null
-                                                ? `৳${booking.finalAmount.toLocaleString(
-                                                    "en-BD"
-                                                )}`
+                                            {booking.finalAmount !== null &&
+                                                booking.finalAmount !== undefined
+                                                ? `৳${Number(
+                                                    booking.finalAmount
+                                                ).toLocaleString("en-BD")}`
                                                 : "Not set"}
                                         </p>
                                     </div>
                                 </div>
 
+                                {/* Customer Notes */}
                                 {booking.notes && (
                                     <div className="mt-6 rounded-xl border border-white/5 bg-black/30 p-4">
                                         <p className="text-xs text-gray-500">
@@ -471,6 +590,7 @@ export default function CustomerDashboardPage() {
 
                                 {/* Booking Actions */}
                                 <div className="mt-7 flex flex-wrap gap-3 border-t border-white/10 pt-6">
+
                                     {booking.status === "requested" && (
                                         <button
                                             onClick={() =>
@@ -532,6 +652,11 @@ export default function CustomerDashboardPage() {
                         ))}
                     </div>
                 )}
+
+                {/* Footer */}
+                <p className="mt-8 text-center text-xs text-gray-600">
+                    FixMate • Customer Dashboard
+                </p>
             </div>
         </main>
     );
