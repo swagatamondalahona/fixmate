@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-
 const slides = [
     {
         image: "/smartphone-repair.jpg",
@@ -33,7 +32,6 @@ const slides = [
     },
 ];
 
-
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -58,7 +56,10 @@ export default function HeroSlider() {
     const slide = slides[currentSlide];
 
     return (
-        <section className="relative w-full overflow-hidden bg-black">
+        <section
+            data-theme="dark"
+            className="relative isolate w-full overflow-hidden bg-black text-white"
+        >
             <div className="relative min-h-[520px] md:min-h-[600px]">
                 {/* Background Image */}
                 <Image
@@ -73,6 +74,7 @@ export default function HeroSlider() {
 
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-orange-950/70" />
+
                 {/* Content */}
                 <div className="relative z-10 mx-auto flex min-h-[520px] max-w-7xl items-center px-6 py-20 md:min-h-[600px]">
                     <div className="max-w-2xl text-white">
