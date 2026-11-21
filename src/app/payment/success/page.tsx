@@ -46,7 +46,6 @@ export default function PaymentSuccessPage() {
                 }
 
                 const tokenResult = await authClient.token();
-
                 const token = tokenResult.data?.token;
 
                 if (tokenResult.error || !token) {
@@ -55,8 +54,17 @@ export default function PaymentSuccessPage() {
                     );
                 }
 
+                const apiURL =
+                    process.env.NEXT_PUBLIC_API_URL;
+
+                if (!apiURL) {
+                    throw new Error(
+                        "API URL is not configured."
+                    );
+                }
+
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/payments/verify-checkout-session`,
+                    `${apiURL}/api/payments/verify-checkout-session`,
                     {
                         method: "POST",
                         headers: {
@@ -77,7 +85,9 @@ export default function PaymentSuccessPage() {
                     );
                 }
 
-                if (result.data?.paymentStatus !== "paid") {
+                if (
+                    result.data?.paymentStatus !== "paid"
+                ) {
                     throw new Error(
                         "Payment has not been confirmed yet."
                     );

@@ -158,7 +158,7 @@ export default function CustomerBookingsPage() {
             const tokenResponse = await authClient.token();
             const token = tokenResponse.data?.token;
 
-            if (!token) {
+            if (tokenResponse.error || !token) {
                 throw new Error("Please sign in again.");
             }
 
@@ -176,7 +176,7 @@ export default function CustomerBookingsPage() {
 
             const data = await response.json();
 
-            if (!response.ok) {
+            if (!response.ok || !data.success) {
                 throw new Error(
                     data.message || "Unable to start payment."
                 );
@@ -184,8 +184,13 @@ export default function CustomerBookingsPage() {
 
             const checkoutUrl = data.data?.checkoutUrl;
 
-            if (!checkoutUrl) {
-                throw new Error("Checkout URL was not returned.");
+            if (
+                typeof checkoutUrl !== "string" ||
+                !checkoutUrl.startsWith("https://")
+            ) {
+                throw new Error(
+                    "A valid checkout URL was not returned."
+                );
             }
 
             window.location.href = checkoutUrl;
@@ -196,7 +201,7 @@ export default function CustomerBookingsPage() {
                     ? error.message
                     : "Payment could not be started."
             );
-
+        } finally {
             setPayingId("");
         }
     };
@@ -246,11 +251,11 @@ export default function CustomerBookingsPage() {
                 className="pointer-events-none fixed inset-0 overflow-hidden"
             >
                 <div className="absolute -left-16 top-32 rotate-[-35deg] text-[180px] font-black text-orange-500/[0.04]">
-                    ⚒
+                    âš’
                 </div>
 
                 <div className="absolute right-[-30px] top-[35%] rotate-45 text-[190px] font-black text-orange-500/[0.035]">
-                    🔧
+                    ðŸ”§
                 </div>
             </div>
 
@@ -328,7 +333,7 @@ export default function CustomerBookingsPage() {
                         disabled={loading}
                         className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-5 py-2.5 text-sm font-semibold text-orange-400 transition hover:bg-orange-500/20 disabled:opacity-50"
                     >
-                        {loading ? "Refreshing..." : "↻ Refresh Bookings"}
+                        {loading ? "Refreshing..." : "â†» Refresh Bookings"}
                     </button>
                 </div>
 
@@ -342,7 +347,7 @@ export default function CustomerBookingsPage() {
                             }`}
                     >
                         <span className="text-xl">
-                            {toast.type === "success" ? "✓" : "!"}
+                            {toast.type === "success" ? "âœ“" : "!"}
                         </span>
 
                         <p className="text-sm font-semibold">
@@ -354,7 +359,7 @@ export default function CustomerBookingsPage() {
                             aria-label="Close notification"
                             className="ml-2 text-lg opacity-70 hover:opacity-100"
                         >
-                            ×
+                            Ã—
                         </button>
                     </div>
                 )}
@@ -363,14 +368,13 @@ export default function CustomerBookingsPage() {
                 {loading ? (
                     <div className="rounded-2xl border border-white/10 bg-[#111111] p-14 text-center">
                         <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
-
                         <p className="text-orange-400">
                             Loading your bookings...
                         </p>
                     </div>
                 ) : bookings.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-[#111111]/95 px-6 py-16 text-center">
-                        <div className="mb-4 text-5xl">📋</div>
+                        <div className="mb-4 text-5xl">ðŸ“‹</div>
 
                         <h2 className="text-xl font-bold">
                             No Bookings Found
@@ -516,7 +520,7 @@ export default function CustomerBookingsPage() {
                                         >
                                             {updatingId === booking._id
                                                 ? "Cancelling..."
-                                                : "✕ Cancel Booking"}
+                                                : "âœ• Cancel Booking"}
                                         </button>
                                     )}
 
@@ -537,7 +541,7 @@ export default function CustomerBookingsPage() {
 
                                     {booking.paymentStatus === "paid" && (
                                         <span className="rounded-lg border border-green-500/30 bg-green-500/10 px-6 py-3 text-sm font-bold text-green-400">
-                                            ✓ Payment Completed
+                                            âœ“ Payment Completed
                                         </span>
                                     )}
 
