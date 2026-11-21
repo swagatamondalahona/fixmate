@@ -12,12 +12,14 @@ const navLinks = [
     { name: "About", href: "/about" },
 ];
 
+type Theme = "dark" | "light";
+
 export default function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [theme, setTheme] = useState<"dark" | "light">("dark");
+    const [theme, setTheme] = useState<Theme>("dark");
     const [isSigningOut, setIsSigningOut] = useState(false);
 
     const { data: session, isPending } = useSession();
@@ -35,28 +37,45 @@ export default function Navbar() {
                     ? "/dashboard/customer"
                     : "/dashboard/profile";
 
+    // Load saved theme and apply it globally
     useEffect(() => {
         const savedTheme = localStorage.getItem("fixmate-theme");
 
-        if (savedTheme === "light" || savedTheme === "dark") {
-            setTheme(savedTheme);
-        }
+        const initialTheme: Theme =
+            savedTheme === "light" || savedTheme === "dark"
+                ? savedTheme
+                : "dark";
+
+        setTheme(initialTheme);
+
+        document.documentElement.setAttribute(
+            "data-theme",
+            initialTheme
+        );
+
+        localStorage.setItem("fixmate-theme", initialTheme);
     }, []);
 
-    useEffect(() => {
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem("fixmate-theme", theme);
-    }, [theme]);
-
+    // Toggle theme globally
     const toggleTheme = () => {
-        setTheme((current) =>
-            current === "dark" ? "light" : "dark"
+        const newTheme: Theme =
+            theme === "dark" ? "light" : "dark";
+
+        setTheme(newTheme);
+
+        document.documentElement.setAttribute(
+            "data-theme",
+            newTheme
         );
+
+        localStorage.setItem("fixmate-theme", newTheme);
     };
 
+    // Sign Out
     const handleSignOut = async () => {
         try {
             setIsSigningOut(true);
+
             await authClient.signOut();
 
             setIsMenuOpen(false);
@@ -83,8 +102,12 @@ export default function Navbar() {
                     />
 
                     <span className="text-2xl font-extrabold">
-                        <span className="text-zinc-900 dark:text-white">Fix</span>
-                        <span className="text-orange-500">Mate</span>
+                        <span className="text-zinc-900 dark:text-white">
+                            Fix
+                        </span>
+                        <span className="text-orange-500">
+                            Mate
+                        </span>
                     </span>
                 </Link>
 
@@ -149,7 +172,9 @@ export default function Navbar() {
                                 disabled={isSigningOut}
                                 className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600 disabled:opacity-50"
                             >
-                                {isSigningOut ? "Signing Out..." : "Sign Out"}
+                                {isSigningOut
+                                    ? "Signing Out..."
+                                    : "Sign Out"}
                             </button>
                         </>
                     ) : (
@@ -231,7 +256,9 @@ export default function Navbar() {
                                 <>
                                     <Link
                                         href={dashboardPath}
-                                        onClick={() => setIsMenuOpen(false)}
+                                        onClick={() =>
+                                            setIsMenuOpen(false)
+                                        }
                                         className="text-sm font-semibold text-zinc-800 hover:text-orange-500 dark:text-white"
                                     >
                                         Dashboard
@@ -243,14 +270,18 @@ export default function Navbar() {
                                         disabled={isSigningOut}
                                         className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
                                     >
-                                        {isSigningOut ? "Signing Out..." : "Sign Out"}
+                                        {isSigningOut
+                                            ? "Signing Out..."
+                                            : "Sign Out"}
                                     </button>
                                 </>
                             ) : (
                                 <>
                                     <Link
                                         href="/sign-in"
-                                        onClick={() => setIsMenuOpen(false)}
+                                        onClick={() =>
+                                            setIsMenuOpen(false)
+                                        }
                                         className="text-sm font-semibold text-zinc-800 hover:text-orange-500 dark:text-white"
                                     >
                                         Sign In
@@ -258,7 +289,9 @@ export default function Navbar() {
 
                                     <Link
                                         href="/sign-up"
-                                        onClick={() => setIsMenuOpen(false)}
+                                        onClick={() =>
+                                            setIsMenuOpen(false)
+                                        }
                                         className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
                                     >
                                         Sign Up
