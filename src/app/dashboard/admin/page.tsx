@@ -148,7 +148,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-black px-5 py-16 text-white sm:px-8 lg:px-12">
+        <main className="relative min-h-screen overflow-hidden bg-zinc-100 px-5 py-16 text-zinc-900 transition-colors duration-300 dark:bg-black dark:text-white sm:px-8 lg:px-12">
             {/* Background */}
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-600/10 blur-[120px]" />
             <div className="pointer-events-none absolute -right-40 top-80 h-96 w-96 rounded-full bg-blue-700/10 blur-[120px]" />
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                             </span>
                         </h1>
 
-                        <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
+                        <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
                             Manage repair services, review technician
                             submissions and control service approvals.
                         </p>
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
                     <button
                         onClick={fetchPendingServices}
                         disabled={loading}
-                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400"
                     >
                         {loading ? "Loading..." : "Refresh Services"}
                     </button>
@@ -185,8 +185,8 @@ export default function AdminDashboard() {
 
                 {/* Statistics */}
                 <div className="mb-10 grid gap-5 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-7">
-                        <p className="text-sm text-zinc-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-7 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
                             Pending Services
                         </p>
 
@@ -195,17 +195,17 @@ export default function AdminDashboard() {
                         </h2>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950/80 p-7">
-                        <p className="text-sm text-zinc-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-7 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
                             Dashboard Status
                         </p>
 
                         <h2
                             className={`mt-3 text-2xl font-bold ${apiStatus === "Connected"
-                                    ? "text-green-500"
+                                    ? "text-green-600 dark:text-green-500"
                                     : apiStatus === "Checking..."
-                                        ? "text-yellow-400"
-                                        : "text-red-400"
+                                        ? "text-yellow-600 dark:text-yellow-400"
+                                        : "text-red-600 dark:text-red-400"
                                 }`}
                         >
                             {apiStatus}
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
                 {error && (
                     <div
                         role="alert"
-                        className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                        className="mb-6 rounded-xl border border-red-500/30 bg-red-50 p-4 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400"
                     >
                         {error}
                     </div>
@@ -227,7 +227,7 @@ export default function AdminDashboard() {
                 {message && (
                     <div
                         role="status"
-                        className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
+                        className="mb-6 rounded-xl border border-green-500/30 bg-green-50 p-4 text-sm text-green-700 dark:bg-green-500/10 dark:text-green-400"
                     >
                         {message}
                     </div>
@@ -242,27 +242,27 @@ export default function AdminDashboard() {
                         </span>
                     </h2>
 
-                    <p className="mt-2 text-sm text-zinc-400">
+                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                         Review and approve services submitted by technicians.
                     </p>
                 </div>
 
                 {/* Loading */}
                 {loading ? (
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center shadow-xl dark:border-white/10 dark:bg-zinc-950">
                         <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-orange-500/20 border-t-orange-500" />
 
-                        <p className="text-zinc-400">
+                        <p className="text-zinc-600 dark:text-zinc-400">
                             Loading pending services...
                         </p>
                     </div>
                 ) : error ? (
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-zinc-950">
                         <h3 className="text-xl font-semibold">
                             Unable to Load Services
                         </h3>
 
-                        <p className="mt-2 text-sm text-zinc-400">
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                             Please check your connection and try again.
                         </p>
 
@@ -275,14 +275,14 @@ export default function AdminDashboard() {
                     </div>
                 ) : services.length === 0 ? (
                     /* Empty State */
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-zinc-950">
                         <div className="mb-4 text-5xl">🛠️</div>
 
                         <h3 className="text-xl font-semibold">
                             No Pending Services
                         </h3>
 
-                        <p className="mt-2 text-sm text-zinc-400">
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                             All submitted services have been reviewed.
                         </p>
                     </div>
@@ -292,7 +292,7 @@ export default function AdminDashboard() {
                         {services.map((service) => (
                             <div
                                 key={service._id}
-                                className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 transition hover:border-orange-500/40"
+                                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl transition-colors duration-300 hover:border-orange-500/40 dark:border-white/10 dark:bg-zinc-950"
                             >
                                 {service.image ? (
                                     <img
@@ -301,18 +301,18 @@ export default function AdminDashboard() {
                                         className="h-48 w-full object-cover"
                                     />
                                 ) : (
-                                    <div className="flex h-40 items-center justify-center bg-gradient-to-br from-zinc-900 to-orange-950/40 text-5xl">
+                                    <div className="flex h-40 items-center justify-center bg-gradient-to-br from-zinc-200 to-orange-100 text-5xl dark:from-zinc-900 dark:to-orange-950/40">
                                         🔧
                                     </div>
                                 )}
 
                                 <div className="p-6">
                                     <div className="mb-4 flex items-center justify-between gap-3">
-                                        <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400">
+                                        <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-600 dark:text-orange-400">
                                             {service.category}
                                         </span>
 
-                                        <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400">
+                                        <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs text-yellow-700 dark:text-yellow-400">
                                             Pending
                                         </span>
                                     </div>
@@ -321,20 +321,20 @@ export default function AdminDashboard() {
                                         {service.title}
                                     </h3>
 
-                                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-400">
+                                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                                         {service.description}
                                     </p>
 
-                                    <div className="mt-5 space-y-2 border-t border-white/10 pt-4 text-sm text-zinc-400">
+                                    <div className="mt-5 space-y-2 border-t border-zinc-200 pt-4 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
                                         <p>
-                                            <span className="text-white">
+                                            <span className="font-semibold text-zinc-900 dark:text-white">
                                                 Price:
                                             </span>{" "}
                                             {service.basePrice}
                                         </p>
 
                                         <p>
-                                            <span className="text-white">
+                                            <span className="font-semibold text-zinc-900 dark:text-white">
                                                 Mode:
                                             </span>{" "}
                                             {service.serviceMode}
@@ -342,7 +342,7 @@ export default function AdminDashboard() {
 
                                         {service.technicianEmail && (
                                             <p className="break-all">
-                                                <span className="text-white">
+                                                <span className="font-semibold text-zinc-900 dark:text-white">
                                                     Technician:
                                                 </span>{" "}
                                                 {service.technicianEmail}
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
                                                 )
                                             }
                                             disabled={processingId !== ""}
-                                            className="rounded-xl bg-red-600/15 px-3 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="rounded-xl bg-red-600/15 px-3 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
                                         >
                                             {processingId === service._id
                                                 ? "Processing..."

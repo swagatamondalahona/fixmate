@@ -118,11 +118,11 @@ export default function MyServicesPage() {
     const getStatusStyle = (status: Service["approvalStatus"]) => {
         switch (status) {
             case "approved":
-                return "border-green-500/20 bg-green-500/10 text-green-400";
+                return "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400";
             case "rejected":
-                return "border-red-500/20 bg-red-500/10 text-red-400";
+                return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400";
             default:
-                return "border-yellow-500/20 bg-yellow-500/10 text-yellow-400";
+                return "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
         }
     };
 
@@ -275,8 +275,14 @@ export default function MyServicesPage() {
         }
     };
 
+    const inputClass =
+        "w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-500";
+
+    const labelClass =
+        "mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-300";
+
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-8 text-white sm:px-6 lg:px-8">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-100 px-4 py-8 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white sm:px-6 lg:px-8">
 
             {/* Background glow */}
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-500/5 blur-[120px]" />
@@ -302,7 +308,7 @@ export default function MyServicesPage() {
                     <div>
                         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-2">
                             <span className="h-2 w-2 rounded-full bg-orange-500" />
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-400">
+                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
                                 Technician Workspace
                             </span>
                         </div>
@@ -311,7 +317,7 @@ export default function MyServicesPage() {
                             My <span className="text-orange-500">Services</span>
                         </h1>
 
-                        <p className="mt-3 max-w-xl text-sm leading-6 text-gray-400 sm:text-base">
+                        <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600 dark:text-gray-400 sm:text-base">
                             View your submitted repair services and check their approval status.
                         </p>
                     </div>
@@ -319,7 +325,7 @@ export default function MyServicesPage() {
                     <button
                         onClick={fetchMyServices}
                         disabled={loading}
-                        className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-5 py-3 text-sm font-semibold text-orange-400 transition hover:bg-orange-500/20 disabled:opacity-50"
+                        className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-5 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-400"
                     >
                         ↻ Refresh Services
                     </button>
@@ -329,8 +335,8 @@ export default function MyServicesPage() {
                 {message && (
                     <div
                         className={`mb-6 rounded-xl border p-4 text-sm ${messageType === "success"
-                                ? "border-green-500/20 bg-green-500/10 text-green-400"
-                                : "border-red-500/20 bg-red-500/10 text-red-400"
+                            ? "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400"
+                            : "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400"
                             }`}
                     >
                         {message}
@@ -369,13 +375,15 @@ export default function MyServicesPage() {
                     ].map((item) => (
                         <div
                             key={item.label}
-                            className="rounded-2xl border border-white/10 bg-[#111111]/95 p-5 shadow-xl shadow-black/20"
+                            className="rounded-2xl border border-zinc-200 bg-white/90 p-5 shadow-xl shadow-black/5 transition-colors duration-300 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                         >
                             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-500">
                                 {item.icon}
                             </div>
-                            <p className="text-sm text-gray-400">{item.label}</p>
-                            <p className="mt-1 text-2xl font-bold text-white">
+                            <p className="text-sm text-zinc-500 dark:text-gray-400">
+                                {item.label}
+                            </p>
+                            <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">
                                 {item.value}
                             </p>
                         </div>
@@ -384,9 +392,9 @@ export default function MyServicesPage() {
 
                 {/* Loading */}
                 {loading && (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111]/95 p-12 text-center">
-                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-orange-500" />
-                        <p className="mt-4 text-sm text-gray-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-12 text-center dark:border-white/10 dark:bg-[#111111]/95">
+                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-orange-500 dark:border-white/20 dark:border-t-orange-500" />
+                        <p className="mt-4 text-sm text-zinc-500 dark:text-gray-400">
                             Loading your services...
                         </p>
                     </div>
@@ -395,7 +403,9 @@ export default function MyServicesPage() {
                 {/* Error */}
                 {!loading && error && (
                     <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-                        <p className="text-sm text-red-400">{error}</p>
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                            {error}
+                        </p>
                         <button
                             onClick={fetchMyServices}
                             className="mt-4 rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
@@ -407,16 +417,16 @@ export default function MyServicesPage() {
 
                 {/* Empty State */}
                 {!loading && !error && services.length === 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111]/95 px-6 py-16 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 px-6 py-16 text-center dark:border-white/10 dark:bg-[#111111]/95">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10 text-3xl text-orange-500">
                             ⚒
                         </div>
 
-                        <h2 className="mt-5 text-xl font-bold text-white">
+                        <h2 className="mt-5 text-xl font-bold text-zinc-900 dark:text-white">
                             No Services Found
                         </h2>
 
-                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-400">
+                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600 dark:text-gray-400">
                             You have not submitted any repair services yet.
                         </p>
 
@@ -435,10 +445,10 @@ export default function MyServicesPage() {
                         {services.map((service) => (
                             <div
                                 key={service._id}
-                                className="overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-xl shadow-black/20 transition hover:-translate-y-1 hover:border-orange-500/30"
+                                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-xl shadow-black/5 transition hover:-translate-y-1 hover:border-orange-500/30 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                             >
                                 {/* Image */}
-                                <div className="relative h-52 overflow-hidden bg-[#080808]">
+                                <div className="relative h-52 overflow-hidden bg-zinc-200 dark:bg-[#080808]">
                                     {service.image ? (
                                         <img
                                             src={service.image}
@@ -463,7 +473,7 @@ export default function MyServicesPage() {
                                 {/* Content */}
                                 <div className="p-5">
                                     <div className="mb-3 flex items-center justify-between gap-3">
-                                        <span className="rounded-lg bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-400">
+                                        <span className="rounded-lg bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-600 dark:text-orange-400">
                                             {service.category}
                                         </span>
 
@@ -472,54 +482,54 @@ export default function MyServicesPage() {
                                         </span>
                                     </div>
 
-                                    <h2 className="text-lg font-bold text-white">
+                                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
                                         {service.title}
                                     </h2>
 
-                                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-400">
+                                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-600 dark:text-gray-400">
                                         {service.description}
                                     </p>
 
-                                    <div className="mt-5 space-y-3 border-t border-white/10 pt-4 text-sm">
+                                    <div className="mt-5 space-y-3 border-t border-zinc-200 pt-4 text-sm dark:border-white/10">
                                         <div className="flex justify-between gap-3">
-                                            <span className="text-gray-500">
+                                            <span className="text-zinc-500 dark:text-gray-500">
                                                 Service Mode
                                             </span>
-                                            <span className="text-gray-200">
+                                            <span className="text-right text-zinc-800 dark:text-gray-200">
                                                 {service.serviceMode || "Not specified"}
                                             </span>
                                         </div>
 
                                         <div className="flex justify-between gap-3">
-                                            <span className="text-gray-500">
+                                            <span className="text-zinc-500 dark:text-gray-500">
                                                 Service Area
                                             </span>
-                                            <span className="text-right text-gray-200">
+                                            <span className="text-right text-zinc-800 dark:text-gray-200">
                                                 {service.serviceArea || "Not specified"}
                                             </span>
                                         </div>
 
                                         <div className="flex justify-between gap-3">
-                                            <span className="text-gray-500">
+                                            <span className="text-zinc-500 dark:text-gray-500">
                                                 Duration
                                             </span>
-                                            <span className="text-gray-200">
+                                            <span className="text-right text-zinc-800 dark:text-gray-200">
                                                 {service.estimatedDuration || "Not specified"}
                                             </span>
                                         </div>
 
                                         <div className="flex justify-between gap-3">
-                                            <span className="text-gray-500">
+                                            <span className="text-zinc-500 dark:text-gray-500">
                                                 Availability
                                             </span>
-                                            <span className={service.isAvailable ? "text-green-400" : "text-red-400"}>
+                                            <span className={service.isAvailable ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}>
                                                 {service.isAvailable ? "Available" : "Unavailable"}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="mt-5 border-t border-white/10 pt-4">
-                                        <p className="text-xs text-gray-500">
+                                    <div className="mt-5 border-t border-zinc-200 pt-4 dark:border-white/10">
+                                        <p className="text-xs text-zinc-500 dark:text-gray-500">
                                             Submitted:{" "}
                                             {service.createdAt
                                                 ? new Date(service.createdAt).toLocaleDateString()
@@ -530,14 +540,14 @@ export default function MyServicesPage() {
                                         <div className="mt-4 grid grid-cols-2 gap-3">
                                             <button
                                                 onClick={() => handleEdit(service)}
-                                                className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-2.5 text-sm font-semibold text-orange-400 transition hover:bg-orange-500/20"
+                                                className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-500/20 dark:text-orange-400"
                                             >
                                                 ✎ Edit
                                             </button>
 
                                             <button
                                                 onClick={() => setDeleteService(service)}
-                                                className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/20"
+                                                className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-500/20 dark:text-red-400"
                                             >
                                                 ✕ Delete
                                             </button>
@@ -552,14 +562,14 @@ export default function MyServicesPage() {
 
             {/* Edit Service Modal */}
             {editingService && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm">
-                    <div className="my-8 w-full max-w-2xl rounded-2xl border border-white/10 bg-[#111111] p-6 shadow-2xl sm:p-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm dark:bg-black/80">
+                    <div className="my-8 w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111111] sm:p-8">
                         <div className="mb-6 flex items-center justify-between gap-4">
                             <div>
-                                <h2 className="text-2xl font-bold text-white">
+                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
                                     Edit <span className="text-orange-500">Service</span>
                                 </h2>
-                                <p className="mt-2 text-sm text-gray-400">
+                                <p className="mt-2 text-sm text-zinc-600 dark:text-gray-400">
                                     Update your service information.
                                 </p>
                             </div>
@@ -568,7 +578,7 @@ export default function MyServicesPage() {
                                 type="button"
                                 onClick={() => setEditingService(null)}
                                 disabled={saving}
-                                className="rounded-lg border border-white/10 px-3 py-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+                                className="rounded-lg border border-zinc-200 px-3 py-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
                             >
                                 ✕
                             </button>
@@ -576,7 +586,7 @@ export default function MyServicesPage() {
 
                         <form onSubmit={handleUpdateService} className="space-y-5">
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-300">
+                                <label className={labelClass}>
                                     Service Title
                                 </label>
                                 <input
@@ -585,12 +595,12 @@ export default function MyServicesPage() {
                                     minLength={3}
                                     value={formData.title}
                                     onChange={(e) => handleInputChange("title", e.target.value)}
-                                    className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                    className={inputClass}
                                 />
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-300">
+                                <label className={labelClass}>
                                     Description
                                 </label>
                                 <textarea
@@ -599,13 +609,13 @@ export default function MyServicesPage() {
                                     rows={4}
                                     value={formData.description}
                                     onChange={(e) => handleInputChange("description", e.target.value)}
-                                    className="w-full resize-y rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                    className={`${inputClass} resize-y`}
                                 />
                             </div>
 
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                                    <label className={labelClass}>
                                         Category
                                     </label>
                                     <input
@@ -613,19 +623,19 @@ export default function MyServicesPage() {
                                         required
                                         value={formData.category}
                                         onChange={(e) => handleInputChange("category", e.target.value)}
-                                        className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                        className={inputClass}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                                    <label className={labelClass}>
                                         Service Mode
                                     </label>
                                     <select
                                         required
                                         value={formData.serviceMode}
                                         onChange={(e) => handleInputChange("serviceMode", e.target.value)}
-                                        className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                        className={inputClass}
                                     >
                                         <option value="On-site">On-site</option>
                                         <option value="Remote">Remote</option>
@@ -633,7 +643,7 @@ export default function MyServicesPage() {
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                                    <label className={labelClass}>
                                         Base Price
                                     </label>
                                     <input
@@ -643,38 +653,38 @@ export default function MyServicesPage() {
                                         step="0.01"
                                         value={formData.basePrice}
                                         onChange={(e) => handleInputChange("basePrice", e.target.value)}
-                                        className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                        className={inputClass}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-300">
+                                    <label className={labelClass}>
                                         Estimated Duration
-                                        <span className="ml-2 text-xs text-gray-500">(Optional)</span>
+                                        <span className="ml-2 text-xs text-zinc-500 dark:text-gray-500">(Optional)</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.estimatedDuration}
                                         onChange={(e) => handleInputChange("estimatedDuration", e.target.value)}
-                                        className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                        className={inputClass}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-300">
+                                <label className={labelClass}>
                                     Service Area
-                                    <span className="ml-2 text-xs text-gray-500">(Optional)</span>
+                                    <span className="ml-2 text-xs text-zinc-500 dark:text-gray-500">(Optional)</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.serviceArea}
                                     onChange={(e) => handleInputChange("serviceArea", e.target.value)}
-                                    className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none transition focus:border-orange-500"
+                                    className={inputClass}
                                 />
                             </div>
 
-                            <p className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 text-xs leading-5 text-yellow-400">
+                            <p className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 text-xs leading-5 text-yellow-700 dark:text-yellow-400">
                                 After updating, your service will be submitted for admin approval again.
                             </p>
 
@@ -683,7 +693,7 @@ export default function MyServicesPage() {
                                     type="button"
                                     onClick={() => setEditingService(null)}
                                     disabled={saving}
-                                    className="rounded-xl border border-white/10 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:bg-white/10 disabled:opacity-50"
+                                    className="rounded-xl border border-zinc-200 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/10"
                                 >
                                     Cancel
                                 </button>
@@ -703,19 +713,19 @@ export default function MyServicesPage() {
 
             {/* Delete Confirmation Modal */}
             {deleteService && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111111] p-6 shadow-2xl">
-                        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-2xl text-red-400">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm dark:bg-black/80">
+                    <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111111]">
+                        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-2xl text-red-600 dark:text-red-400">
                             ✕
                         </div>
 
-                        <h2 className="text-xl font-bold text-white">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
                             Delete Service?
                         </h2>
 
-                        <p className="mt-3 text-sm leading-6 text-gray-400">
+                        <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-gray-400">
                             Are you sure you want to delete{" "}
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold text-zinc-900 dark:text-white">
                                 {deleteService.title}
                             </span>
                             ? This action cannot be undone.
@@ -726,7 +736,7 @@ export default function MyServicesPage() {
                                 type="button"
                                 onClick={() => setDeleteService(null)}
                                 disabled={deleting}
-                                className="rounded-xl border border-white/10 px-5 py-3 text-sm font-semibold text-gray-300 transition hover:bg-white/10 disabled:opacity-50"
+                                className="rounded-xl border border-zinc-200 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/10"
                             >
                                 Cancel
                             </button>

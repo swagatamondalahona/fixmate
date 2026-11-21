@@ -22,7 +22,14 @@ interface Booking {
     createdAt?: string;
 }
 
-type BookingFilter = "all" | "requested" | "accepted" | "in-progress" | "completed" | "rejected" | "cancelled";
+type BookingFilter =
+    | "all"
+    | "requested"
+    | "accepted"
+    | "in-progress"
+    | "completed"
+    | "rejected"
+    | "cancelled";
 
 export default function AdminBookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -37,7 +44,8 @@ export default function AdminBookingsPage() {
 
         if (tokenError || !data?.token) {
             throw new Error(
-                tokenError?.message || "Authentication required. Please sign in again."
+                tokenError?.message ||
+                "Authentication required. Please sign in again."
             );
         }
 
@@ -113,17 +121,21 @@ export default function AdminBookingsPage() {
     const getStatusStyle = (status: string) => {
         switch (status) {
             case "completed":
-                return "bg-green-500/10 text-green-400";
+                return "bg-green-500/10 text-green-700 dark:text-green-400";
+
             case "accepted":
             case "in-progress":
-                return "bg-blue-500/10 text-blue-400";
+                return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+
             case "rejected":
             case "cancelled":
-                return "bg-red-500/10 text-red-400";
+                return "bg-red-500/10 text-red-600 dark:text-red-400";
+
             case "requested":
-                return "bg-yellow-500/10 text-yellow-400";
+                return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
+
             default:
-                return "bg-zinc-500/10 text-zinc-400";
+                return "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400";
         }
     };
 
@@ -140,7 +152,7 @@ export default function AdminBookingsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-black px-5 py-12 text-white sm:px-8 lg:px-12">
+        <main className="min-h-screen bg-zinc-100 px-5 py-12 text-zinc-900 transition-colors duration-300 dark:bg-black dark:text-white sm:px-8 lg:px-12">
             <div className="mx-auto max-w-7xl">
 
                 {/* Header */}
@@ -151,10 +163,11 @@ export default function AdminBookingsPage() {
                         </p>
 
                         <h1 className="text-3xl font-bold sm:text-5xl">
-                            Manage <span className="text-orange-500">Bookings</span>
+                            Manage{" "}
+                            <span className="text-orange-500">Bookings</span>
                         </h1>
 
-                        <p className="mt-3 text-sm text-zinc-400">
+                        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                             View and monitor all customer service bookings.
                         </p>
                     </div>
@@ -162,7 +175,7 @@ export default function AdminBookingsPage() {
                     <button
                         onClick={fetchBookings}
                         disabled={loading}
-                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-400 transition hover:bg-orange-500 hover:text-black disabled:opacity-50"
+                        className="rounded-xl border border-orange-500/40 bg-orange-500/10 px-6 py-3 font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-black disabled:opacity-50 dark:text-orange-400"
                     >
                         {loading ? "Loading..." : "Refresh Bookings"}
                     </button>
@@ -184,10 +197,12 @@ export default function AdminBookingsPage() {
                             onClick={() => setFilter(key)}
                             className={`rounded-2xl border p-5 text-left transition ${filter === key
                                     ? "border-orange-500 bg-orange-500/10"
-                                    : "border-white/10 bg-zinc-950 hover:border-orange-500/40"
+                                    : "border-zinc-200 bg-white hover:border-orange-500/40 dark:border-white/10 dark:bg-zinc-950"
                                 }`}
                         >
-                            <p className="text-sm text-zinc-400">{label}</p>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                {label}
+                            </p>
 
                             <p className="mt-2 text-3xl font-bold text-orange-500">
                                 {count}
@@ -200,7 +215,7 @@ export default function AdminBookingsPage() {
                 {error && (
                     <div
                         role="alert"
-                        className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                        className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400"
                     >
                         {error}
                     </div>
@@ -208,12 +223,12 @@ export default function AdminBookingsPage() {
 
                 {/* Booking List */}
                 {loading ? (
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center text-zinc-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center text-zinc-600 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-400">
                         Loading bookings...
                     </div>
                 ) : error && bookings.length === 0 ? (
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
-                        <p className="text-zinc-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-zinc-950">
+                        <p className="text-zinc-600 dark:text-zinc-400">
                             Unable to load bookings.
                         </p>
 
@@ -225,14 +240,14 @@ export default function AdminBookingsPage() {
                         </button>
                     </div>
                 ) : filteredBookings.length === 0 ? (
-                    <div className="rounded-2xl border border-white/10 bg-zinc-950 p-12 text-center">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-zinc-950">
                         <div className="mb-4 text-5xl">📋</div>
 
-                        <h2 className="text-xl font-semibold">
+                        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">
                             No Bookings Found
                         </h2>
 
-                        <p className="mt-2 text-sm text-zinc-400">
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                             There are no bookings in this category.
                         </p>
                     </div>
@@ -241,7 +256,7 @@ export default function AdminBookingsPage() {
                         {filteredBookings.map((booking) => (
                             <article
                                 key={booking._id}
-                                className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 transition hover:border-orange-500/40"
+                                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:border-orange-500/40 dark:border-white/10 dark:bg-zinc-950"
                             >
                                 <div className="p-5 sm:p-7">
 
@@ -255,13 +270,13 @@ export default function AdminBookingsPage() {
                                                     className="h-16 w-16 rounded-xl object-cover"
                                                 />
                                             ) : (
-                                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-900 text-3xl">
+                                                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-zinc-200 text-3xl dark:bg-zinc-900">
                                                     🔧
                                                 </div>
                                             )}
 
                                             <div>
-                                                <h2 className="text-lg font-bold sm:text-xl">
+                                                <h2 className="text-lg font-bold text-zinc-900 dark:text-white sm:text-xl">
                                                     {booking.serviceTitle}
                                                 </h2>
 
@@ -272,28 +287,32 @@ export default function AdminBookingsPage() {
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">
-                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(booking.status)}`}>
+                                            <span
+                                                className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(booking.status)}`}
+                                            >
                                                 {booking.status}
                                             </span>
 
-                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${booking.paymentStatus === "paid"
-                                                    ? "bg-green-500/10 text-green-400"
-                                                    : "bg-yellow-500/10 text-yellow-400"
-                                                }`}>
+                                            <span
+                                                className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${booking.paymentStatus === "paid"
+                                                        ? "bg-green-500/10 text-green-700 dark:text-green-400"
+                                                        : "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
+                                                    }`}
+                                            >
                                                 {booking.paymentStatus}
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Booking Details */}
-                                    <div className="mt-6 grid gap-5 border-t border-white/10 pt-5 sm:grid-cols-2 lg:grid-cols-3">
+                                    <div className="mt-6 grid gap-5 border-t border-zinc-200 pt-5 dark:border-white/10 sm:grid-cols-2 lg:grid-cols-3">
 
                                         <div>
                                             <p className="text-xs uppercase tracking-wider text-zinc-500">
                                                 Customer
                                             </p>
 
-                                            <p className="mt-2 break-all text-sm text-white">
+                                            <p className="mt-2 break-all text-sm text-zinc-800 dark:text-white">
                                                 {booking.customerEmail || booking.customerId}
                                             </p>
                                         </div>
@@ -303,7 +322,7 @@ export default function AdminBookingsPage() {
                                                 Technician
                                             </p>
 
-                                            <p className="mt-2 break-all text-sm text-white">
+                                            <p className="mt-2 break-all text-sm text-zinc-800 dark:text-white">
                                                 {booking.technicianEmail || booking.technicianId}
                                             </p>
                                         </div>
@@ -313,7 +332,7 @@ export default function AdminBookingsPage() {
                                                 Booking Date
                                             </p>
 
-                                            <p className="mt-2 text-sm text-white">
+                                            <p className="mt-2 text-sm text-zinc-800 dark:text-white">
                                                 {formatDate(booking.bookingDate)}
                                             </p>
                                         </div>
@@ -323,7 +342,7 @@ export default function AdminBookingsPage() {
                                                 Service Address
                                             </p>
 
-                                            <p className="mt-2 text-sm text-white">
+                                            <p className="mt-2 text-sm text-zinc-800 dark:text-white">
                                                 {booking.address}
                                             </p>
                                         </div>
@@ -333,7 +352,7 @@ export default function AdminBookingsPage() {
                                                 Base Price
                                             </p>
 
-                                            <p className="mt-2 text-sm font-semibold text-orange-400">
+                                            <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
                                                 {booking.basePrice}
                                             </p>
                                         </div>
@@ -343,19 +362,19 @@ export default function AdminBookingsPage() {
                                                 Final Amount
                                             </p>
 
-                                            <p className="mt-2 text-sm font-semibold text-orange-400">
+                                            <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
                                                 {booking.finalAmount ?? "Not set"}
                                             </p>
                                         </div>
                                     </div>
 
                                     {booking.notes && (
-                                        <div className="mt-5 border-t border-white/10 pt-5">
+                                        <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-white/10">
                                             <p className="text-xs uppercase tracking-wider text-zinc-500">
                                                 Problem Description
                                             </p>
 
-                                            <p className="mt-2 text-sm leading-6 text-zinc-300">
+                                            <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                                                 {booking.notes}
                                             </p>
                                         </div>

@@ -168,20 +168,20 @@ export default function TechnicianRequestsPage() {
     const getStatusStyle = (status: BookingStatus) => {
         switch (status) {
             case "accepted":
-                return "border-blue-500/20 bg-blue-500/10 text-blue-400";
+                return "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400";
 
             case "in-progress":
-                return "border-orange-500/20 bg-orange-500/10 text-orange-400";
+                return "border-orange-500/20 bg-orange-500/10 text-orange-700 dark:text-orange-400";
 
             case "completed":
-                return "border-green-500/20 bg-green-500/10 text-green-400";
+                return "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400";
 
             case "rejected":
             case "cancelled":
-                return "border-red-500/20 bg-red-500/10 text-red-400";
+                return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400";
 
             default:
-                return "border-yellow-500/20 bg-yellow-500/10 text-yellow-400";
+                return "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
         }
     };
 
@@ -215,7 +215,7 @@ export default function TechnicianRequestsPage() {
     ];
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-8 text-white sm:px-6 lg:px-8">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-100 px-4 py-8 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white sm:px-6 lg:px-8">
 
             {/* Background Glow */}
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-500/5 blur-[120px]" />
@@ -244,7 +244,7 @@ export default function TechnicianRequestsPage() {
                         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-2">
                             <span className="h-2 w-2 rounded-full bg-orange-500" />
 
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-400">
+                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
                                 Technician Workspace
                             </span>
                         </div>
@@ -253,7 +253,7 @@ export default function TechnicianRequestsPage() {
                             Service <span className="text-orange-500">Requests</span>
                         </h1>
 
-                        <p className="mt-3 max-w-xl text-sm leading-6 text-gray-400 sm:text-base">
+                        <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600 dark:text-gray-400 sm:text-base">
                             Manage customer booking requests and update your service progress.
                         </p>
                     </div>
@@ -261,7 +261,7 @@ export default function TechnicianRequestsPage() {
                     <button
                         onClick={fetchRequests}
                         disabled={loading}
-                        className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-5 py-3 text-sm font-semibold text-orange-400 transition hover:bg-orange-500/20 disabled:opacity-50"
+                        className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-5 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-500/20 disabled:opacity-50 dark:text-orange-400"
                     >
                         ↻ Refresh Requests
                     </button>
@@ -272,17 +272,17 @@ export default function TechnicianRequestsPage() {
                     {stats.map((item) => (
                         <div
                             key={item.label}
-                            className="rounded-2xl border border-white/10 bg-[#111111]/95 p-5 shadow-xl shadow-black/20"
+                            className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl shadow-black/5 transition-colors duration-300 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                         >
-                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-500">
+                            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-600 dark:text-orange-500">
                                 {item.icon}
                             </div>
 
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-zinc-600 dark:text-gray-400">
                                 {item.label}
                             </p>
 
-                            <p className="mt-1 text-2xl font-bold text-white">
+                            <p className="mt-1 text-2xl font-bold">
                                 {item.value}
                             </p>
                         </div>
@@ -291,10 +291,10 @@ export default function TechnicianRequestsPage() {
 
                 {/* Loading */}
                 {loading && (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111]/95 p-12 text-center">
-                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-orange-500" />
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-[#111111]/95">
+                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-orange-500 dark:border-white/20 dark:border-t-orange-500" />
 
-                        <p className="mt-4 text-sm text-gray-400">
+                        <p className="mt-4 text-sm text-zinc-600 dark:text-gray-400">
                             Loading service requests...
                         </p>
                     </div>
@@ -303,7 +303,7 @@ export default function TechnicianRequestsPage() {
                 {/* Error */}
                 {!loading && error && (
                     <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-                        <p className="text-sm text-red-400">
+                        <p className="text-sm text-red-600 dark:text-red-400">
                             {error}
                         </p>
 
@@ -318,16 +318,16 @@ export default function TechnicianRequestsPage() {
 
                 {/* Empty State */}
                 {!loading && !error && bookings.length === 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-[#111111]/95 px-6 py-16 text-center">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10 text-3xl text-orange-500">
+                    <div className="rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center dark:border-white/10 dark:bg-[#111111]/95">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10 text-3xl text-orange-600 dark:text-orange-500">
                             ▤
                         </div>
 
-                        <h2 className="mt-5 text-xl font-bold text-white">
+                        <h2 className="mt-5 text-xl font-bold">
                             No Service Requests
                         </h2>
 
-                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-400">
+                        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600 dark:text-gray-400">
                             You do not have any customer booking requests yet.
                         </p>
                     </div>
@@ -339,16 +339,16 @@ export default function TechnicianRequestsPage() {
                         {bookings.map((booking) => (
                             <div
                                 key={booking._id}
-                                className="overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/95 shadow-xl shadow-black/20 transition hover:border-orange-500/30"
+                                className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-black/5 transition hover:border-orange-500/30 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                             >
                                 {/* Card Header */}
-                                <div className="flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-col gap-4 border-b border-zinc-200 p-5 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <p className="text-xs uppercase tracking-wider text-gray-500">
+                                        <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-gray-500">
                                             Booking ID
                                         </p>
 
-                                        <p className="mt-1 break-all text-sm font-medium text-gray-300">
+                                        <p className="mt-1 break-all text-sm font-medium text-zinc-700 dark:text-gray-300">
                                             {booking._id}
                                         </p>
                                     </div>
@@ -366,7 +366,7 @@ export default function TechnicianRequestsPage() {
 
                                     {/* Service */}
                                     <div className="flex gap-4">
-                                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#080808]">
+                                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-[#080808]">
                                             {booking.serviceImage ? (
                                                 <img
                                                     src={booking.serviceImage}
@@ -381,53 +381,53 @@ export default function TechnicianRequestsPage() {
                                         </div>
 
                                         <div className="min-w-0">
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-zinc-500 dark:text-gray-500">
                                                 Requested Service
                                             </p>
 
-                                            <h2 className="mt-1 text-lg font-bold text-white">
+                                            <h2 className="mt-1 text-lg font-bold">
                                                 {booking.serviceTitle}
                                             </h2>
 
-                                            <p className="mt-2 text-sm text-orange-400">
+                                            <p className="mt-2 text-sm text-orange-600 dark:text-orange-400">
                                                 Base Price: ${booking.basePrice}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Customer Information */}
-                                    <div className="mt-6 rounded-xl border border-white/10 bg-[#080808]/70 p-4">
-                                        <h3 className="mb-3 text-sm font-semibold text-orange-400">
+                                    <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-[#080808]/70">
+                                        <h3 className="mb-3 text-sm font-semibold text-orange-600 dark:text-orange-400">
                                             Customer Information
                                         </h3>
 
                                         <div className="space-y-3 text-sm">
                                             <div className="flex flex-col justify-between gap-1 sm:flex-row">
-                                                <span className="text-gray-500">
+                                                <span className="text-zinc-500 dark:text-gray-500">
                                                     Customer Name
                                                 </span>
 
-                                                <span className="text-gray-200">
+                                                <span className="text-zinc-800 dark:text-gray-200">
                                                     {booking.customerName || "Not provided"}
                                                 </span>
                                             </div>
 
                                             <div className="flex flex-col justify-between gap-1 sm:flex-row">
-                                                <span className="text-gray-500">
+                                                <span className="text-zinc-500 dark:text-gray-500">
                                                     Customer Email
                                                 </span>
 
-                                                <span className="break-all text-gray-200">
+                                                <span className="break-all text-zinc-800 dark:text-gray-200">
                                                     {booking.customerEmail || "Not available"}
                                                 </span>
                                             </div>
 
                                             <div className="flex flex-col justify-between gap-1 sm:flex-row">
-                                                <span className="text-gray-500">
+                                                <span className="text-zinc-500 dark:text-gray-500">
                                                     Booking Date
                                                 </span>
 
-                                                <span className="text-gray-200">
+                                                <span className="text-zinc-800 dark:text-gray-200">
                                                     {booking.bookingDate
                                                         ? new Date(booking.bookingDate).toLocaleDateString()
                                                         : "Not available"}
@@ -435,11 +435,11 @@ export default function TechnicianRequestsPage() {
                                             </div>
 
                                             <div className="flex flex-col justify-between gap-1 sm:flex-row">
-                                                <span className="text-gray-500">
+                                                <span className="text-zinc-500 dark:text-gray-500">
                                                     Address
                                                 </span>
 
-                                                <span className="text-right text-gray-200">
+                                                <span className="text-right text-zinc-800 dark:text-gray-200">
                                                     {booking.address || "Not provided"}
                                                 </span>
                                             </div>
@@ -448,25 +448,25 @@ export default function TechnicianRequestsPage() {
 
                                     {/* Problem Description */}
                                     <div className="mt-4">
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-gray-500">
                                             Customer Problem Description
                                         </p>
 
-                                        <p className="mt-2 rounded-xl border border-white/10 bg-[#080808]/70 p-4 text-sm leading-6 text-gray-300">
+                                        <p className="mt-2 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-zinc-700 dark:border-white/10 dark:bg-[#080808]/70 dark:text-gray-300">
                                             {booking.notes || "No additional description provided."}
                                         </p>
                                     </div>
 
                                     {/* Payment Information */}
-                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-4 dark:border-white/10">
                                         <div>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-zinc-500 dark:text-gray-500">
                                                 Payment Status
                                             </p>
 
                                             <p className={`mt-1 text-sm font-semibold capitalize ${booking.paymentStatus === "paid"
-                                                    ? "text-green-400"
-                                                    : "text-yellow-400"
+                                                ? "text-green-600 dark:text-green-400"
+                                                : "text-yellow-600 dark:text-yellow-400"
                                                 }`}>
                                                 {booking.paymentStatus}
                                             </p>
@@ -474,11 +474,11 @@ export default function TechnicianRequestsPage() {
 
                                         {booking.finalAmount !== null && (
                                             <div className="text-right">
-                                                <p className="text-xs text-gray-500">
+                                                <p className="text-xs text-zinc-500 dark:text-gray-500">
                                                     Final Amount
                                                 </p>
 
-                                                <p className="mt-1 font-bold text-orange-400">
+                                                <p className="mt-1 font-bold text-orange-600 dark:text-orange-400">
                                                     ${booking.finalAmount}
                                                 </p>
                                             </div>
@@ -486,7 +486,7 @@ export default function TechnicianRequestsPage() {
                                     </div>
 
                                     {/* Status Actions */}
-                                    <div className="mt-5 border-t border-white/10 pt-5">
+                                    <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-white/10">
                                         {booking.status === "requested" && (
                                             <div className="flex flex-col gap-3 sm:flex-row">
                                                 <button
@@ -518,7 +518,7 @@ export default function TechnicianRequestsPage() {
                                                         }
                                                     }}
                                                     disabled={updatingId === booking._id}
-                                                    className="flex-1 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
+                                                    className="flex-1 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-500/20 disabled:opacity-50 dark:text-red-400"
                                                 >
                                                     ✕ Reject Request
                                                 </button>
@@ -546,7 +546,7 @@ export default function TechnicianRequestsPage() {
                                             <div className="space-y-3">
                                                 <label
                                                     htmlFor={`amount-${booking._id}`}
-                                                    className="block text-sm font-medium text-gray-300"
+                                                    className="block text-sm font-medium text-zinc-700 dark:text-gray-300"
                                                 >
                                                     Final Amount ($)
                                                 </label>
@@ -564,7 +564,7 @@ export default function TechnicianRequestsPage() {
                                                         }))
                                                     }
                                                     placeholder="Enter final service amount"
-                                                    className="w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-sm text-white outline-none transition placeholder:text-gray-600 focus:border-orange-500"
+                                                    className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
                                                 />
 
                                                 <button
@@ -585,19 +585,19 @@ export default function TechnicianRequestsPage() {
                                         )}
 
                                         {booking.status === "completed" && (
-                                            <p className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-400">
+                                            <p className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-700 dark:text-green-400">
                                                 ✓ Service Completed
                                             </p>
                                         )}
 
                                         {booking.status === "rejected" && (
-                                            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+                                            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
                                                 This booking request was rejected.
                                             </p>
                                         )}
 
                                         {booking.status === "cancelled" && (
-                                            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+                                            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
                                                 This booking was cancelled by the customer.
                                             </p>
                                         )}

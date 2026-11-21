@@ -25,7 +25,7 @@ export default function AddServicePage() {
     const [error, setError] = useState("");
 
     const inputClass =
-        "w-full rounded-xl border border-white/10 bg-[#080808] px-4 py-3 text-white placeholder:text-gray-600 outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30";
+        "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600";
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -133,7 +133,7 @@ export default function AddServicePage() {
     };
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#080808] px-4 py-8 text-white sm:px-6 lg:px-8">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-100 px-4 py-8 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white sm:px-6 lg:px-8">
 
             {/* Background glow */}
             <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-orange-500/5 blur-[120px]" />
@@ -158,7 +158,7 @@ export default function AddServicePage() {
                 <div className="mb-8">
                     <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-2">
                         <span className="h-2 w-2 rounded-full bg-orange-500" />
-                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-400">
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400">
                             Technician Workspace
                         </span>
                     </div>
@@ -167,7 +167,7 @@ export default function AddServicePage() {
                         Add New <span className="text-orange-500">Service</span>
                     </h1>
 
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-gray-400 sm:text-base">
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600 dark:text-gray-400 sm:text-base">
                         Add your repair service details and submit them for admin review and approval.
                     </p>
                 </div>
@@ -175,22 +175,22 @@ export default function AddServicePage() {
                 {/* Form */}
                 <form
                     onSubmit={handleSubmit}
-                    className="rounded-2xl border border-white/10 bg-[#111111]/95 p-5 shadow-2xl shadow-black/30 backdrop-blur-sm sm:p-8"
+                    className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl shadow-black/5 backdrop-blur-sm transition-colors duration-300 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/30 sm:p-8"
                 >
-                    <div className="mb-7 flex items-center gap-3 border-b border-white/10 pb-5">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-500">
+                    <div className="mb-7 flex items-center gap-3 border-b border-zinc-200 pb-5 dark:border-white/10">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-xl text-orange-600 dark:text-orange-500">
                             ⚒
                         </div>
                         <div>
-                            <h2 className="font-semibold text-white">Service Information</h2>
-                            <p className="mt-1 text-xs text-gray-500">Fill in the details below</p>
+                            <h2 className="font-semibold text-zinc-900 dark:text-white">Service Information</h2>
+                            <p className="mt-1 text-xs text-zinc-500 dark:text-gray-500">Fill in the details below</p>
                         </div>
                     </div>
 
                     <div className="space-y-6">
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                 Service Title
                             </label>
                             <input
@@ -204,7 +204,7 @@ export default function AddServicePage() {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                 Service Description
                             </label>
                             <textarea
@@ -219,7 +219,7 @@ export default function AddServicePage() {
 
                         <div className="grid gap-6 sm:grid-cols-2">
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                     Category
                                 </label>
                                 <input
@@ -233,7 +233,7 @@ export default function AddServicePage() {
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                     Service Mode
                                 </label>
                                 <select
@@ -242,16 +242,16 @@ export default function AddServicePage() {
                                     required
                                     className={`${inputClass} appearance-none`}
                                 >
-                                    <option value="" className="bg-[#111111]">Select service mode</option>
-                                    <option value="On-site" className="bg-[#111111]">On-site</option>
-                                    <option value="Remote" className="bg-[#111111]">Remote</option>
+                                    <option value="" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">Select service mode</option>
+                                    <option value="On-site" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">On-site</option>
+                                    <option value="Remote" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">Remote</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className="grid gap-6 sm:grid-cols-2">
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                     Estimated Duration
                                 </label>
                                 <input
@@ -265,7 +265,7 @@ export default function AddServicePage() {
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-200">
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                     Service Area
                                 </label>
                                 <input
@@ -280,7 +280,7 @@ export default function AddServicePage() {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                 Base Price
                             </label>
                             <div className="relative">
@@ -301,23 +301,23 @@ export default function AddServicePage() {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-200">
+                            <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                 Service Image
                             </label>
-                            <div className="rounded-xl border border-dashed border-white/20 bg-[#080808] p-5 transition hover:border-orange-500/50">
+                            <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 transition hover:border-orange-500/50 dark:border-white/20 dark:bg-[#080808]">
                                 <input
                                     id="service-image"
                                     type="file"
                                     accept="image/*"
                                     onChange={(event) => setImage(event.target.files?.[0] || null)}
                                     required
-                                    className="w-full text-sm text-gray-400 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-500/10 file:px-4 file:py-2.5 file:font-semibold file:text-orange-400 hover:file:bg-orange-500/20"
+                                    className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-500/10 file:px-4 file:py-2.5 file:font-semibold file:text-orange-600 hover:file:bg-orange-500/20 dark:text-gray-400 dark:file:text-orange-400"
                                 />
-                                <p className="mt-3 text-xs text-gray-500">
+                                <p className="mt-3 text-xs text-zinc-500 dark:text-gray-500">
                                     Select an image. It will be uploaded to ImgBB.
                                 </p>
                                 {image && (
-                                    <p className="mt-2 break-all text-xs text-orange-400">
+                                    <p className="mt-2 break-all text-xs text-orange-600 dark:text-orange-400">
                                         Selected: {image.name}
                                     </p>
                                 )}
@@ -325,13 +325,13 @@ export default function AddServicePage() {
                         </div>
 
                         {error && (
-                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+                            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400">
                                 {error}
                             </div>
                         )}
 
                         {message && (
-                            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400">
+                            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-700 dark:text-green-400">
                                 {message}
                             </div>
                         )}
@@ -351,7 +351,7 @@ export default function AddServicePage() {
                             )}
                         </button>
 
-                        <p className="text-center text-xs text-gray-500">
+                        <p className="text-center text-xs text-zinc-500 dark:text-gray-500">
                             Your service will remain pending until admin approval.
                         </p>
                     </div>

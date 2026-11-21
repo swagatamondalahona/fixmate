@@ -49,7 +49,9 @@ export default function Navbar() {
     }, [theme]);
 
     const toggleTheme = () => {
-        setTheme((current) => current === "dark" ? "light" : "dark");
+        setTheme((current) =>
+            current === "dark" ? "light" : "dark"
+        );
     };
 
     const handleSignOut = async () => {
@@ -69,7 +71,7 @@ export default function Navbar() {
     };
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black">
+        <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white text-zinc-900 transition-colors duration-200 dark:border-white/10 dark:bg-black dark:text-white">
             <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
 
                 {/* Logo */}
@@ -81,7 +83,7 @@ export default function Navbar() {
                     />
 
                     <span className="text-2xl font-extrabold">
-                        <span className="text-white">Fix</span>
+                        <span className="text-zinc-900 dark:text-white">Fix</span>
                         <span className="text-orange-500">Mate</span>
                     </span>
                 </Link>
@@ -95,7 +97,9 @@ export default function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`relative py-2 text-sm font-medium transition-colors duration-200 hover:text-orange-500 ${active ? "text-orange-500" : "text-white"
+                                className={`relative py-2 text-sm font-medium transition-colors duration-200 hover:text-orange-500 ${active
+                                        ? "text-orange-500"
+                                        : "text-zinc-700 dark:text-white"
                                     }`}
                             >
                                 {link.name}
@@ -116,21 +120,25 @@ export default function Navbar() {
                         type="button"
                         onClick={toggleTheme}
                         aria-label="Toggle color theme"
-                        title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                        className="rounded-lg border border-white/20 px-3 py-2 text-lg text-white transition-colors hover:border-orange-500 hover:text-orange-500"
+                        title={
+                            theme === "dark"
+                                ? "Switch to Light Mode"
+                                : "Switch to Dark Mode"
+                        }
+                        className="rounded-lg border border-zinc-300 px-3 py-2 text-lg text-zinc-800 transition-colors hover:border-orange-500 hover:text-orange-500 dark:border-white/20 dark:text-white"
                     >
                         {theme === "dark" ? "☀️" : "🌙"}
                     </button>
 
                     {isPending ? (
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-zinc-500 dark:text-gray-400">
                             Loading...
                         </span>
                     ) : session ? (
                         <>
                             <Link
                                 href={dashboardPath}
-                                className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
+                                className="text-sm font-semibold text-zinc-800 transition-colors hover:text-orange-500 dark:text-white"
                             >
                                 Dashboard
                             </Link>
@@ -148,7 +156,7 @@ export default function Navbar() {
                         <>
                             <Link
                                 href="/sign-in"
-                                className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
+                                className="text-sm font-semibold text-zinc-800 transition-colors hover:text-orange-500 dark:text-white"
                             >
                                 Sign In
                             </Link>
@@ -169,7 +177,7 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     aria-label="Toggle navigation menu"
                     aria-expanded={isMenuOpen}
-                    className="text-2xl text-white transition-colors hover:text-orange-500 md:hidden"
+                    className="text-2xl text-zinc-900 transition-colors hover:text-orange-500 dark:text-white md:hidden"
                 >
                     {isMenuOpen ? "✕" : "☰"}
                 </button>
@@ -177,7 +185,7 @@ export default function Navbar() {
 
             {/* Mobile Navigation */}
             {isMenuOpen && (
-                <div className="border-t border-white/10 bg-black px-5 py-5 md:hidden">
+                <div className="border-t border-zinc-200 bg-white px-5 py-5 dark:border-white/10 dark:bg-black md:hidden">
                     <div className="flex flex-col gap-5">
 
                         {navLinks.map((link) => {
@@ -188,7 +196,9 @@ export default function Navbar() {
                                     key={link.href}
                                     href={link.href}
                                     onClick={() => setIsMenuOpen(false)}
-                                    className={`text-sm font-medium transition-colors hover:text-orange-500 ${active ? "text-orange-500" : "text-white"
+                                    className={`text-sm font-medium transition-colors hover:text-orange-500 ${active
+                                            ? "text-orange-500"
+                                            : "text-zinc-700 dark:text-white"
                                         }`}
                                 >
                                     {link.name}
@@ -200,18 +210,21 @@ export default function Navbar() {
                         <button
                             type="button"
                             onClick={toggleTheme}
-                            className="flex items-center gap-3 border-t border-white/10 pt-5 text-left text-sm font-semibold text-white hover:text-orange-500"
+                            className="flex items-center gap-3 border-t border-zinc-200 pt-5 text-left text-sm font-semibold text-zinc-800 hover:text-orange-500 dark:border-white/10 dark:text-white"
                         >
                             <span className="text-xl">
                                 {theme === "dark" ? "☀️" : "🌙"}
                             </span>
-                            {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+
+                            {theme === "dark"
+                                ? "Switch to Light Mode"
+                                : "Switch to Dark Mode"}
                         </button>
 
-                        <div className="flex flex-wrap items-center gap-5 border-t border-white/10 pt-5">
+                        <div className="flex flex-wrap items-center gap-5 border-t border-zinc-200 pt-5 dark:border-white/10">
 
                             {isPending ? (
-                                <span className="text-sm text-gray-400">
+                                <span className="text-sm text-zinc-500 dark:text-gray-400">
                                     Loading...
                                 </span>
                             ) : session ? (
@@ -219,7 +232,7 @@ export default function Navbar() {
                                     <Link
                                         href={dashboardPath}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="text-sm font-semibold text-white hover:text-orange-500"
+                                        className="text-sm font-semibold text-zinc-800 hover:text-orange-500 dark:text-white"
                                     >
                                         Dashboard
                                     </Link>
@@ -238,7 +251,7 @@ export default function Navbar() {
                                     <Link
                                         href="/sign-in"
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="text-sm font-semibold text-white hover:text-orange-500"
+                                        className="text-sm font-semibold text-zinc-800 hover:text-orange-500 dark:text-white"
                                     >
                                         Sign In
                                     </Link>

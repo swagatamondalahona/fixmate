@@ -275,17 +275,17 @@ export default function CustomerDashboardPage() {
     const getStatusStyle = (status: Booking["status"]) => {
         const styles: Record<Booking["status"], string> = {
             requested:
-                "border-yellow-500/30 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+                "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
             accepted:
-                "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
             rejected:
-                "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
+                "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
             "in-progress":
-                "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
+                "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
             completed:
-                "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400",
+                "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
             cancelled:
-                "border-gray-500/30 bg-gray-500/10 text-gray-600 dark:text-gray-400",
+                "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-400",
         };
 
         return styles[status] || styles.requested;
@@ -312,7 +312,7 @@ export default function CustomerDashboardPage() {
             {/* Background Watermark */}
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-0 overflow-hidden"
+                className="pointer-events-none fixed inset-0 overflow-hidden select-none"
             >
                 <div className="absolute -left-20 top-32 rotate-[-35deg] text-[180px] font-black text-orange-500/[0.045]">
                     ⚒
@@ -335,7 +335,7 @@ export default function CustomerDashboardPage() {
                         FixMate Customer Panel
                     </p>
 
-                    <h1 className="text-3xl font-extrabold sm:text-4xl">
+                    <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-white sm:text-4xl">
                         My Dashboard
                     </h1>
 
@@ -372,22 +372,22 @@ export default function CustomerDashboardPage() {
                         {
                             title: "Pending Requests",
                             value: requestedCount,
-                            color: "text-yellow-600 dark:text-yellow-400",
+                            color: "text-yellow-700 dark:text-yellow-400",
                         },
                         {
                             title: "Accepted Bookings",
                             value: acceptedCount,
-                            color: "text-blue-600 dark:text-blue-400",
+                            color: "text-blue-700 dark:text-blue-400",
                         },
                         {
                             title: "Completed Bookings",
                             value: completedCount,
-                            color: "text-green-600 dark:text-green-400",
+                            color: "text-green-700 dark:text-green-400",
                         },
                     ].map((item) => (
                         <div
                             key={item.title}
-                            className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl backdrop-blur-sm dark:border-white/10 dark:bg-[#111111]/95"
+                            className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl shadow-black/5 backdrop-blur-sm dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                         >
                             <p className="text-sm text-zinc-600 dark:text-gray-400">
                                 {item.title}
@@ -405,11 +405,11 @@ export default function CustomerDashboardPage() {
                 {/* Booking Section Header */}
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-bold">
+                        <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
                             My Bookings
                         </h2>
 
-                        <p className="mt-1 text-sm text-zinc-500 dark:text-gray-500">
+                        <p className="mt-1 text-sm text-zinc-600 dark:text-gray-500">
                             View and manage all your service requests.
                         </p>
                     </div>
@@ -427,7 +427,7 @@ export default function CustomerDashboardPage() {
                 {error && (
                     <div
                         role="alert"
-                        className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400"
+                        className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-400"
                     >
                         {error}
                     </div>
@@ -454,7 +454,7 @@ export default function CustomerDashboardPage() {
                             📋
                         </div>
 
-                        <h3 className="text-xl font-bold">
+                        <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
                             No Bookings Found
                         </h3>
 
@@ -464,7 +464,7 @@ export default function CustomerDashboardPage() {
 
                         <Link
                             href="/services"
-                            className="mt-6 inline-block rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-black transition hover:bg-orange-400"
+                            className="mt-6 inline-block rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
                         >
                             Explore Services
                         </Link>
@@ -474,7 +474,7 @@ export default function CustomerDashboardPage() {
                         {bookings.map((booking) => (
                             <div
                                 key={booking._id}
-                                className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl backdrop-blur-sm transition hover:border-orange-500/30 sm:p-8 dark:border-white/10 dark:bg-[#111111]/95"
+                                className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl shadow-black/5 backdrop-blur-sm transition hover:border-orange-500/30 sm:p-8 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
                             >
                                 {/* Card Header */}
                                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -483,7 +483,7 @@ export default function CustomerDashboardPage() {
                                             Service Booking
                                         </p>
 
-                                        <h3 className="mt-2 text-xl font-bold sm:text-2xl">
+                                        <h3 className="mt-2 text-xl font-bold text-zinc-900 dark:text-white sm:text-2xl">
                                             {booking.serviceTitle}
                                         </h3>
                                     </div>
@@ -505,7 +505,7 @@ export default function CustomerDashboardPage() {
                                             Technician Email
                                         </p>
 
-                                        <p className="mt-2 break-all font-medium">
+                                        <p className="mt-2 break-all font-medium text-zinc-800 dark:text-gray-200">
                                             {booking.technicianEmail ||
                                                 "Not available"}
                                         </p>
@@ -516,7 +516,7 @@ export default function CustomerDashboardPage() {
                                             Booking Date
                                         </p>
 
-                                        <p className="mt-2 font-medium">
+                                        <p className="mt-2 font-medium text-zinc-800 dark:text-gray-200">
                                             {formatDate(booking.bookingDate)}
                                         </p>
                                     </div>
@@ -539,7 +539,7 @@ export default function CustomerDashboardPage() {
                                             Service Address
                                         </p>
 
-                                        <p className="mt-2 font-medium">
+                                        <p className="mt-2 font-medium text-zinc-800 dark:text-gray-200">
                                             {booking.address || "Not available"}
                                         </p>
                                     </div>
@@ -551,8 +551,8 @@ export default function CustomerDashboardPage() {
 
                                         <p
                                             className={`mt-2 font-semibold capitalize ${booking.paymentStatus === "paid"
-                                                ? "text-green-600 dark:text-green-400"
-                                                : "text-yellow-600 dark:text-yellow-400"
+                                                    ? "text-green-700 dark:text-green-400"
+                                                    : "text-yellow-700 dark:text-yellow-400"
                                                 }`}
                                         >
                                             {booking.paymentStatus || "unpaid"}
@@ -564,7 +564,7 @@ export default function CustomerDashboardPage() {
                                             Final Amount
                                         </p>
 
-                                        <p className="mt-2 font-medium text-green-600 dark:text-green-400">
+                                        <p className="mt-2 font-medium text-green-700 dark:text-green-400">
                                             {booking.finalAmount !== null &&
                                                 booking.finalAmount !== undefined
                                                 ? `৳${Number(
@@ -599,7 +599,7 @@ export default function CustomerDashboardPage() {
                                             disabled={
                                                 updatingId === booking._id
                                             }
-                                            className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-600 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
+                                            className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-700 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
                                         >
                                             {updatingId === booking._id
                                                 ? "Cancelling..."
@@ -616,7 +616,7 @@ export default function CustomerDashboardPage() {
                                                 disabled={
                                                     payingId === booking._id
                                                 }
-                                                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold text-black transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
                                                 {payingId === booking._id
                                                     ? "Redirecting..."
@@ -631,13 +631,13 @@ export default function CustomerDashboardPage() {
                                     )}
 
                                     {booking.status === "in-progress" && (
-                                        <p className="text-sm text-purple-600 dark:text-purple-400">
+                                        <p className="text-sm text-purple-700 dark:text-purple-400">
                                             Your service is currently in progress.
                                         </p>
                                     )}
 
                                     {booking.status === "rejected" && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">
+                                        <p className="text-sm text-red-700 dark:text-red-400">
                                             This booking request was rejected.
                                         </p>
                                     )}

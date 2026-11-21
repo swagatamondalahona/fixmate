@@ -208,19 +208,28 @@ export default function ProfilePage() {
         }
     };
 
+    const inputClass =
+        "w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-black dark:text-white dark:placeholder:text-zinc-500";
+
+    const readOnlyClass =
+        "w-full cursor-not-allowed rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-3 text-zinc-500 outline-none dark:border-white/10 dark:bg-zinc-900 dark:text-gray-500";
+
+    const labelClass =
+        "mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-300";
+
     if (loading) {
         return (
-            <div className="flex min-h-[60vh] items-center justify-center bg-black text-white">
-                <p className="text-orange-400">Loading profile...</p>
+            <div className="flex min-h-[60vh] items-center justify-center bg-zinc-100 text-zinc-900 dark:bg-black dark:text-white">
+                <p className="text-orange-500">Loading profile...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-zinc-100 px-4 py-8 text-zinc-900 dark:bg-black dark:text-white sm:px-6 lg:px-8">
             <div className="mx-auto max-w-4xl">
                 <div className="mb-8">
-                    <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-orange-400">
+                    <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-orange-500">
                         Account Settings
                     </p>
 
@@ -228,17 +237,17 @@ export default function ProfilePage() {
                         Update Profile
                     </h1>
 
-                    <p className="mt-2 text-gray-400">
+                    <p className="mt-2 text-zinc-500 dark:text-gray-400">
                         Manage your personal information and profile photo.
                     </p>
                 </div>
 
                 <form
                     onSubmit={handleSubmit}
-                    className="rounded-2xl border border-white/10 bg-zinc-950 p-5 shadow-xl sm:p-8"
+                    className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-white/10 dark:bg-zinc-950 sm:p-8"
                 >
-                    <div className="mb-8 flex flex-col items-center gap-4 border-b border-white/10 pb-8 sm:flex-row">
-                        <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-orange-500 bg-zinc-800">
+                    <div className="mb-8 flex flex-col items-center gap-4 border-b border-zinc-200 pb-8 dark:border-white/10 sm:flex-row">
+                        <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-orange-500 bg-zinc-200 dark:bg-zinc-800">
                             {preview ? (
                                 <Image
                                     src={preview}
@@ -249,7 +258,7 @@ export default function ProfilePage() {
                                     sizes="96px"
                                 />
                             ) : (
-                                <span className="text-3xl font-bold text-orange-400">
+                                <span className="text-3xl font-bold text-orange-500">
                                     {profile.name.charAt(0).toUpperCase() || "U"}
                                 </span>
                             )}
@@ -259,7 +268,8 @@ export default function ProfilePage() {
                             <h2 className="text-lg font-semibold">
                                 {profile.name || "Your Profile"}
                             </h2>
-                            <p className="text-sm capitalize text-gray-400">
+
+                            <p className="text-sm capitalize text-zinc-500 dark:text-gray-400">
                                 {profile.role}
                             </p>
 
@@ -273,102 +283,108 @@ export default function ProfilePage() {
                                 />
                             </label>
 
-                            <p className="mt-2 text-xs text-gray-500">
+                            <p className="mt-2 text-xs text-zinc-500 dark:text-gray-500">
                                 Image only, maximum 5 MB.
                             </p>
                         </div>
                     </div>
 
                     {message && (
-                        <div className="mb-5 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-400">
+                        <div className="mb-5 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400">
                             {message}
                         </div>
                     )}
 
                     {error && (
-                        <div className="mb-5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                        <div className="mb-5 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
                             {error}
                         </div>
                     )}
 
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Full Name
                             </label>
+
                             <input
                                 type="text"
                                 name="name"
                                 value={profile.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full rounded-lg border border-white/10 bg-black px-4 py-3 text-white outline-none focus:border-orange-500"
+                                className={inputClass}
                                 placeholder="Enter your full name"
                             />
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Email (Read Only)
                             </label>
+
                             <input
                                 type="email"
                                 value={profile.email}
                                 readOnly
-                                className="w-full cursor-not-allowed rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-gray-500 outline-none"
+                                className={readOnlyClass}
                             />
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Role (Read Only)
                             </label>
+
                             <input
                                 type="text"
                                 value={profile.role}
                                 readOnly
-                                className="w-full cursor-not-allowed rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 capitalize text-gray-500 outline-none"
+                                className={`${readOnlyClass} capitalize`}
                             />
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Phone Number
                             </label>
+
                             <input
                                 type="tel"
                                 name="phone"
                                 value={profile.phone || ""}
                                 onChange={handleChange}
-                                className="w-full rounded-lg border border-white/10 bg-black px-4 py-3 text-white outline-none focus:border-orange-500"
+                                className={inputClass}
                                 placeholder="Enter phone number"
                             />
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Area / City
                             </label>
+
                             <input
                                 type="text"
                                 name="area"
                                 value={profile.area || ""}
                                 onChange={handleChange}
-                                className="w-full rounded-lg border border-white/10 bg-black px-4 py-3 text-white outline-none focus:border-orange-500"
+                                className={inputClass}
                                 placeholder="e.g. Mirpur, Dhaka"
                             />
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className="mb-2 block text-sm font-medium text-gray-300">
+                            <label className={labelClass}>
                                 Bio
                             </label>
+
                             <textarea
                                 name="bio"
                                 value={profile.bio || ""}
                                 onChange={handleChange}
                                 rows={4}
-                                className="w-full resize-none rounded-lg border border-white/10 bg-black px-4 py-3 text-white outline-none focus:border-orange-500"
+                                className={`${inputClass} resize-none`}
                                 placeholder="Write a short bio..."
                             />
                         </div>

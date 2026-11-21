@@ -116,7 +116,6 @@ export default function CustomerPaymentsPage() {
         0
     );
 
-    // Display all payment amounts in Bangladeshi Taka.
     const formatAmount = (amount: number) => {
         return `৳${amount.toLocaleString("en-BD", {
             minimumFractionDigits: 2,
@@ -143,7 +142,7 @@ export default function CustomerPaymentsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#080808] px-4 py-8 text-white sm:px-6 lg:px-8">
+        <main className="min-h-screen bg-zinc-100 px-4 py-8 text-zinc-900 transition-colors duration-300 dark:bg-[#080808] dark:text-white sm:px-6 lg:px-8">
             <div className="mx-auto max-w-7xl">
 
                 {/* Header */}
@@ -151,7 +150,7 @@ export default function CustomerPaymentsPage() {
                     <div>
                         <Link
                             href="/dashboard/customer"
-                            className="mb-3 inline-flex items-center gap-2 text-sm text-gray-400 transition hover:text-orange-500"
+                            className="mb-3 inline-flex items-center gap-2 text-sm text-zinc-600 transition hover:text-orange-500 dark:text-gray-400"
                         >
                             ← Back to Dashboard
                         </Link>
@@ -160,7 +159,7 @@ export default function CustomerPaymentsPage() {
                             Payment History
                         </h1>
 
-                        <p className="mt-2 text-sm text-gray-400">
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-gray-400">
                             View and track all your service payments.
                         </p>
                     </div>
@@ -168,7 +167,7 @@ export default function CustomerPaymentsPage() {
                     <button
                         onClick={fetchPayments}
                         disabled={loading}
-                        className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold transition hover:border-orange-500 hover:text-orange-500 disabled:opacity-50"
+                        className="rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold transition hover:border-orange-500 hover:text-orange-600 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:hover:text-orange-500"
                     >
                         {loading ? "Refreshing..." : "↻ Refresh"}
                     </button>
@@ -176,8 +175,8 @@ export default function CustomerPaymentsPage() {
 
                 {/* Summary Cards */}
                 <div className="mb-8 grid gap-5 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-[#111] p-6">
-                        <p className="text-sm text-gray-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-6 transition-colors duration-300 dark:border-white/10 dark:bg-[#111]">
+                        <p className="text-sm text-zinc-600 dark:text-gray-400">
                             Total Payments
                         </p>
 
@@ -185,40 +184,40 @@ export default function CustomerPaymentsPage() {
                             {payments.length}
                         </h2>
 
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-2 text-xs text-zinc-500 dark:text-gray-500">
                             Successful transactions
                         </p>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#111] p-6">
-                        <p className="text-sm text-gray-400">
+                    <div className="rounded-2xl border border-zinc-200 bg-white p-6 transition-colors duration-300 dark:border-white/10 dark:bg-[#111]">
+                        <p className="text-sm text-zinc-600 dark:text-gray-400">
                             Total Amount Paid
                         </p>
 
-                        <h2 className="mt-3 text-3xl font-bold text-orange-500">
+                        <h2 className="mt-3 text-3xl font-bold text-orange-600 dark:text-orange-500">
                             {formatAmount(totalAmount)}
                         </h2>
 
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-2 text-xs text-zinc-500 dark:text-gray-500">
                             Total successful payment amount
                         </p>
                     </div>
                 </div>
 
                 {/* Payment Table */}
-                <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#111]">
-                    <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+                <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-colors duration-300 dark:border-white/10 dark:bg-[#111]">
+                    <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-5 dark:border-white/10">
                         <div>
                             <h2 className="text-lg font-bold">
                                 Transactions
                             </h2>
 
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-zinc-500 dark:text-gray-500">
                                 Your recent payment records
                             </p>
                         </div>
 
-                        <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-500">
+                        <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-600 dark:text-orange-500">
                             {payments.length} Records
                         </span>
                     </div>
@@ -227,13 +226,13 @@ export default function CustomerPaymentsPage() {
                         <div className="py-20 text-center">
                             <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
 
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-zinc-600 dark:text-gray-400">
                                 Loading payment history...
                             </p>
                         </div>
                     ) : error ? (
                         <div className="px-6 py-16 text-center">
-                            <p className="mb-4 text-sm text-red-400">
+                            <p className="mb-4 text-sm text-red-600 dark:text-red-400">
                                 {error}
                             </p>
 
@@ -252,7 +251,7 @@ export default function CustomerPaymentsPage() {
                                 No Payments Yet
                             </h3>
 
-                            <p className="mx-auto mt-2 max-w-md text-sm text-gray-400">
+                            <p className="mx-auto mt-2 max-w-md text-sm text-zinc-600 dark:text-gray-400">
                                 Your completed service payments will appear
                                 here.
                             </p>
@@ -267,7 +266,7 @@ export default function CustomerPaymentsPage() {
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[850px] text-left text-sm">
-                                <thead className="bg-white/[0.03] text-xs uppercase tracking-wider text-gray-500">
+                                <thead className="bg-zinc-100 text-xs uppercase tracking-wider text-zinc-500 dark:bg-white/[0.03] dark:text-gray-500">
                                     <tr>
                                         <th className="px-6 py-4">Service</th>
                                         <th className="px-6 py-4">Booking ID</th>
@@ -278,38 +277,38 @@ export default function CustomerPaymentsPage() {
                                     </tr>
                                 </thead>
 
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
                                     {payments.map((payment) => (
                                         <tr
                                             key={payment._id}
-                                            className="transition hover:bg-white/[0.025]"
+                                            className="transition hover:bg-zinc-50 dark:hover:bg-white/[0.025]"
                                         >
                                             <td className="px-6 py-5 font-semibold">
                                                 {payment.serviceTitle || "Service"}
                                             </td>
 
-                                            <td className="px-6 py-5 text-gray-400">
+                                            <td className="px-6 py-5 text-zinc-600 dark:text-gray-400">
                                                 {shortId(payment.bookingId)}
                                             </td>
 
-                                            <td className="px-6 py-5 text-gray-400">
+                                            <td className="px-6 py-5 text-zinc-600 dark:text-gray-400">
                                                 {shortId(payment.transactionId)}
                                             </td>
 
-                                            <td className="px-6 py-5 font-bold text-orange-500">
+                                            <td className="px-6 py-5 font-bold text-orange-600 dark:text-orange-500">
                                                 {formatAmount(
                                                     Number(payment.amount || 0)
                                                 )}
                                             </td>
 
-                                            <td className="px-6 py-5 text-gray-400">
+                                            <td className="px-6 py-5 text-zinc-600 dark:text-gray-400">
                                                 {formatDate(
                                                     payment.paidAt || payment.createdAt
                                                 )}
                                             </td>
 
                                             <td className="px-6 py-5">
-                                                <span className="rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-400">
+                                                <span className="rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-400">
                                                     {payment.paymentStatus || payment.status || "Paid"}
                                                 </span>
                                             </td>
@@ -321,7 +320,7 @@ export default function CustomerPaymentsPage() {
                     )}
                 </section>
 
-                <p className="mt-5 text-center text-xs text-gray-600">
+                <p className="mt-5 text-center text-xs text-zinc-500 dark:text-gray-600">
                     FixMate • Secure Payment History
                 </p>
             </div>

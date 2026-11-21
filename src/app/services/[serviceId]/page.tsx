@@ -147,7 +147,7 @@ function ServiceDetailsPageContent() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#080808] flex items-center justify-center text-orange-500">
+            <div className="flex min-h-screen items-center justify-center bg-zinc-100 text-orange-500 dark:bg-[#080808]">
                 Loading Service Details...
             </div>
         );
@@ -155,13 +155,15 @@ function ServiceDetailsPageContent() {
 
     if (error || !service) {
         return (
-            <div className="min-h-screen bg-[#080808] flex flex-col items-center justify-center px-6 text-center">
-                <h2 className="text-2xl font-bold text-white">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-100 px-6 text-center dark:bg-[#080808]">
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
                     Service Not Found
                 </h2>
-                <p className="mt-3 text-gray-400">
+
+                <p className="mt-3 text-zinc-500 dark:text-gray-400">
                     {error || "This service is unavailable."}
                 </p>
+
                 <Link
                     href="/services"
                     className="mt-6 rounded-lg bg-orange-500 px-6 py-3 font-semibold text-black hover:bg-orange-400"
@@ -186,8 +188,14 @@ function ServiceDetailsPageContent() {
             ? "Home Visit"
             : service.serviceMode;
 
+    const inputClass =
+        "w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600";
+
+    const labelClass =
+        "mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-300";
+
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[#080808] text-white">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-100 text-zinc-900 dark:bg-[#080808] dark:text-white">
             {/* Repair Tools Watermark */}
             <div
                 aria-hidden="true"
@@ -218,7 +226,7 @@ function ServiceDetailsPageContent() {
                         Service Details
                     </h1>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-gray-400">
+                    <p className="mx-auto mt-4 max-w-2xl text-zinc-500 dark:text-gray-400">
                         Explore service information, pricing and repair
                         details before booking your trusted technician.
                     </p>
@@ -226,7 +234,7 @@ function ServiceDetailsPageContent() {
 
                 <Link
                     href="/services"
-                    className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-orange-400 transition hover:text-orange-300"
+                    className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-orange-500 transition hover:text-orange-400 dark:text-orange-400 dark:hover:text-orange-300"
                 >
                     ← Back to Services
                 </Link>
@@ -234,8 +242,8 @@ function ServiceDetailsPageContent() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Service Information */}
                     <div className="space-y-6 lg:col-span-2">
-                        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111111]/90 shadow-xl shadow-black/30">
-                            <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-orange-500/15 to-[#151515] p-8">
+                        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-[#111111]/90 dark:shadow-black/30">
+                            <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-orange-500/15 to-zinc-200 p-8 dark:to-[#151515]">
                                 {service.image ? (
                                     service.image.startsWith("http") ? (
                                         <img
@@ -255,15 +263,15 @@ function ServiceDetailsPageContent() {
 
                             <div className="space-y-6 p-6 sm:p-8">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <span className="rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm font-semibold text-orange-400">
+                                    <span className="rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
                                         {service.category}
                                     </span>
 
-                                    <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300">
+                                    <span className="rounded-full border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
                                         {serviceMode}
                                     </span>
 
-                                    <span className="rounded-full bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400">
+                                    <span className="rounded-full bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-600 dark:text-green-400">
                                         Available
                                     </span>
                                 </div>
@@ -273,19 +281,19 @@ function ServiceDetailsPageContent() {
                                 </h2>
 
                                 <div>
-                                    <h3 className="mb-3 text-lg font-bold text-orange-400">
+                                    <h3 className="mb-3 text-lg font-bold text-orange-500 dark:text-orange-400">
                                         About This Service
                                     </h3>
 
-                                    <p className="leading-7 text-gray-400">
+                                    <p className="leading-7 text-zinc-600 dark:text-gray-400">
                                         {service.description ||
                                             "No description available."}
                                     </p>
                                 </div>
 
-                                <div className="grid gap-4 border-t border-white/10 pt-6 sm:grid-cols-2">
+                                <div className="grid gap-4 border-t border-zinc-200 pt-6 dark:border-white/10 sm:grid-cols-2">
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-zinc-500 dark:text-gray-500">
                                             Service Category
                                         </p>
                                         <p className="mt-1 font-semibold">
@@ -294,7 +302,7 @@ function ServiceDetailsPageContent() {
                                     </div>
 
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-zinc-500 dark:text-gray-500">
                                             Service Mode
                                         </p>
                                         <p className="mt-1 font-semibold">
@@ -303,7 +311,7 @@ function ServiceDetailsPageContent() {
                                     </div>
 
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-zinc-500 dark:text-gray-500">
                                             Service Area
                                         </p>
                                         <p className="mt-1 font-semibold">
@@ -312,10 +320,10 @@ function ServiceDetailsPageContent() {
                                     </div>
 
                                     <div>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-zinc-500 dark:text-gray-500">
                                             Availability
                                         </p>
-                                        <p className="mt-1 font-semibold text-green-400">
+                                        <p className="mt-1 font-semibold text-green-600 dark:text-green-400">
                                             Available
                                         </p>
                                     </div>
@@ -324,7 +332,7 @@ function ServiceDetailsPageContent() {
                         </div>
 
                         {/* Technician Information */}
-                        <div className="rounded-2xl border border-white/10 bg-[#111111]/90 p-6 sm:p-8">
+                        <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/10 dark:bg-[#111111]/90 sm:p-8">
                             <h3 className="mb-6 text-xl font-bold">
                                 Technician Information
                             </h3>
@@ -335,19 +343,21 @@ function ServiceDetailsPageContent() {
                                 </div>
 
                                 <div>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-zinc-500 dark:text-gray-500">
                                         Service Technician
                                     </p>
-                                    <p className="mt-1 font-semibold text-white">
+
+                                    <p className="mt-1 font-semibold">
                                         {technician}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="mt-6 border-t border-white/10 pt-5">
-                                <p className="text-sm text-gray-500">
+                            <div className="mt-6 border-t border-zinc-200 pt-5 dark:border-white/10">
+                                <p className="text-sm text-zinc-500 dark:text-gray-500">
                                     Service Area
                                 </p>
+
                                 <p className="mt-1 font-semibold">
                                     {serviceArea}
                                 </p>
@@ -357,28 +367,28 @@ function ServiceDetailsPageContent() {
 
                     {/* Price and Booking Form */}
                     <div className="space-y-6">
-                        <div className="h-fit rounded-2xl border border-orange-500/30 bg-[#111111]/95 p-6 shadow-xl shadow-orange-500/5">
-                            <p className="text-sm font-semibold text-gray-400">
+                        <div className="h-fit rounded-2xl border border-orange-500/30 bg-white p-6 shadow-xl shadow-orange-500/5 dark:bg-[#111111]/95">
+                            <p className="text-sm font-semibold text-zinc-500 dark:text-gray-400">
                                 Starting Price
                             </p>
 
-                            <h2 className="mt-2 text-4xl font-extrabold text-orange-400">
+                            <h2 className="mt-2 text-4xl font-extrabold text-orange-500 dark:text-orange-400">
                                 ৳{service.basePrice.toLocaleString("en-BD")}
                             </h2>
 
-                            <p className="mt-4 text-sm leading-6 text-gray-500">
+                            <p className="mt-4 text-sm leading-6 text-zinc-500 dark:text-gray-500">
                                 Final service cost may depend on the repair
                                 requirements.
                             </p>
                         </div>
 
                         {/* Customer Booking Form */}
-                        <div className="rounded-2xl border border-white/10 bg-[#111111]/95 p-6 shadow-xl">
+                        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-[#111111]/95">
                             <h3 className="mb-2 text-xl font-bold">
                                 Book This Service
                             </h3>
 
-                            <p className="mb-6 text-sm text-gray-400">
+                            <p className="mb-6 text-sm text-zinc-500 dark:text-gray-400">
                                 Submit your booking request to the technician.
                             </p>
 
@@ -389,7 +399,7 @@ function ServiceDetailsPageContent() {
                                 <div>
                                     <label
                                         htmlFor="bookingDate"
-                                        className="mb-2 block text-sm font-medium text-gray-300"
+                                        className={labelClass}
                                     >
                                         Booking Date & Time
                                     </label>
@@ -405,14 +415,14 @@ function ServiceDetailsPageContent() {
                                         onChange={(event) =>
                                             setBookingDate(event.target.value)
                                         }
-                                        className="w-full rounded-lg border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none focus:border-orange-500"
+                                        className={inputClass}
                                     />
                                 </div>
 
                                 <div>
                                     <label
                                         htmlFor="address"
-                                        className="mb-2 block text-sm font-medium text-gray-300"
+                                        className={labelClass}
                                     >
                                         Service Address
                                     </label>
@@ -426,14 +436,14 @@ function ServiceDetailsPageContent() {
                                             setAddress(event.target.value)
                                         }
                                         placeholder="Enter your full service address"
-                                        className="w-full resize-none rounded-lg border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none placeholder:text-gray-600 focus:border-orange-500"
+                                        className={`${inputClass} resize-none`}
                                     />
                                 </div>
 
                                 <div>
                                     <label
                                         htmlFor="notes"
-                                        className="mb-2 block text-sm font-medium text-gray-300"
+                                        className={labelClass}
                                     >
                                         Additional Notes (Optional)
                                     </label>
@@ -446,14 +456,14 @@ function ServiceDetailsPageContent() {
                                             setNotes(event.target.value)
                                         }
                                         placeholder="Describe your repair problem..."
-                                        className="w-full resize-none rounded-lg border border-white/10 bg-[#080808] px-4 py-3 text-white outline-none placeholder:text-gray-600 focus:border-orange-500"
+                                        className={`${inputClass} resize-none`}
                                     />
                                 </div>
 
                                 {bookingError && (
                                     <div
                                         role="alert"
-                                        className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+                                        className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400"
                                     >
                                         {bookingError}
                                     </div>
@@ -462,7 +472,7 @@ function ServiceDetailsPageContent() {
                                 {bookingMessage && (
                                     <div
                                         role="status"
-                                        className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-400"
+                                        className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400"
                                     >
                                         {bookingMessage}
                                     </div>
@@ -478,7 +488,7 @@ function ServiceDetailsPageContent() {
                                         : "Confirm Booking →"}
                                 </button>
 
-                                <p className="text-center text-xs leading-5 text-gray-500">
+                                <p className="text-center text-xs leading-5 text-zinc-500 dark:text-gray-500">
                                     Your booking will be submitted as a
                                     request. The technician must accept it
                                     before the service is confirmed.
@@ -496,7 +506,7 @@ export default function ServiceDetailsPage() {
     return (
         <Suspense
             fallback={
-                <div className="flex min-h-screen items-center justify-center bg-[#080808] text-orange-500">
+                <div className="flex min-h-screen items-center justify-center bg-zinc-100 text-orange-500 dark:bg-[#080808]">
                     Loading Service Details...
                 </div>
             }

@@ -53,8 +53,14 @@ export default function SignUpPage() {
         }
     };
 
+    const inputClass =
+        "w-full rounded-lg border border-zinc-300 bg-white/90 px-4 py-3 text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 dark:border-zinc-800 dark:bg-black/80 dark:text-white dark:placeholder:text-zinc-600";
+
+    const labelClass =
+        "mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-200";
+
     return (
-        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-4 py-16 text-white">
+        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-100 px-4 py-16 text-zinc-900 dark:bg-black dark:text-white">
 
             {/* Background Grid */}
             <div
@@ -72,7 +78,16 @@ export default function SignUpPage() {
             {/* Background Radial Light */}
             <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
+                className="pointer-events-none absolute inset-0 dark:hidden"
+                style={{
+                    background:
+                        "radial-gradient(ellipse at center, transparent 20%, rgba(255,255,255,0.65) 100%)",
+                }}
+            />
+
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 hidden dark:block"
                 style={{
                     background:
                         "radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.85) 100%)",
@@ -187,17 +202,17 @@ export default function SignUpPage() {
                         YOUR TRUSTED REPAIR PARTNER
                     </p>
 
-                    <h1 className="mt-6 text-3xl font-bold text-white">
+                    <h1 className="mt-6 text-3xl font-bold text-zinc-900 dark:text-white">
                         Create Your Account
                     </h1>
 
-                    <p className="mt-2 text-sm text-zinc-400">
+                    <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                         Join FixMate and get started today.
                     </p>
                 </div>
 
                 {/* Form Card */}
-                <div className="rounded-2xl border border-orange-500/30 bg-zinc-950/95 p-6 shadow-[0_0_50px_rgba(249,115,22,0.12)] backdrop-blur-xl sm:p-8">
+                <div className="rounded-2xl border border-orange-500/30 bg-white/95 p-6 shadow-[0_0_50px_rgba(249,115,22,0.12)] backdrop-blur-xl dark:bg-zinc-950/95 sm:p-8">
 
                     {/* Card Top Accent */}
                     <div className="mb-7 h-1 w-20 rounded-full bg-gradient-to-r from-orange-600 to-orange-300" />
@@ -208,7 +223,7 @@ export default function SignUpPage() {
                     >
                         {/* Name */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-zinc-200">
+                            <label className={labelClass}>
                                 Full Name
                             </label>
 
@@ -220,13 +235,13 @@ export default function SignUpPage() {
                                     setName(e.target.value)
                                 }
                                 placeholder="Enter your full name"
-                                className="w-full rounded-lg border border-zinc-800 bg-black/80 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                                className={inputClass}
                             />
                         </div>
 
                         {/* Email */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-zinc-200">
+                            <label className={labelClass}>
                                 Email Address
                             </label>
 
@@ -238,13 +253,13 @@ export default function SignUpPage() {
                                     setEmail(e.target.value)
                                 }
                                 placeholder="Enter your email"
-                                className="w-full rounded-lg border border-zinc-800 bg-black/80 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                                className={inputClass}
                             />
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-zinc-200">
+                            <label className={labelClass}>
                                 Password
                             </label>
 
@@ -258,7 +273,7 @@ export default function SignUpPage() {
                                         setPassword(e.target.value)
                                     }
                                     placeholder="At least 8 characters"
-                                    className="w-full rounded-lg border border-zinc-800 bg-black/80 px-4 py-3 pr-12 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                                    className={`${inputClass} pr-12`}
                                 />
 
                                 <button
@@ -271,7 +286,7 @@ export default function SignUpPage() {
                                             ? "Hide password"
                                             : "Show password"
                                     }
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-orange-500"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-orange-500 dark:text-zinc-400"
                                 >
                                     {showPassword ? (
                                         <svg
@@ -312,7 +327,7 @@ export default function SignUpPage() {
 
                         {/* Role */}
                         <div>
-                            <label className="mb-2 block text-sm font-medium text-zinc-200">
+                            <label className={labelClass}>
                                 Register As
                             </label>
 
@@ -321,7 +336,7 @@ export default function SignUpPage() {
                                 onChange={(e) =>
                                     setRole(e.target.value)
                                 }
-                                className="w-full rounded-lg border border-zinc-800 bg-black/80 px-4 py-3 text-white outline-none transition focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                                className={inputClass}
                             >
                                 <option value="customer">
                                     Customer
@@ -334,7 +349,7 @@ export default function SignUpPage() {
 
                         {/* Error */}
                         {error && (
-                            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
                                 {error}
                             </div>
                         )}
@@ -351,9 +366,9 @@ export default function SignUpPage() {
                         </button>
                     </form>
 
-                    <div className="my-6 border-t border-zinc-800" />
+                    <div className="my-6 border-t border-zinc-200 dark:border-zinc-800" />
 
-                    <p className="text-center text-sm text-zinc-400">
+                    <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
                         Already have an account?{" "}
                         <Link
                             href="/sign-in"
