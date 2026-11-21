@@ -32,18 +32,18 @@ export default function PopularCategories() {
                 </div>
 
                 {/* Category Cards */}
-                <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
                     {categories.map((category) => (
                         <Link
                             key={category.name}
                             href={`/services?category=${encodeURIComponent(category.name)}`}
-                            className="group rounded-2xl border border-zinc-200 bg-white p-6 text-center transition duration-300 hover:-translate-y-2 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/10 dark:border-zinc-800 dark:bg-zinc-900"
+                            className="group min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 text-center transition duration-300 hover:-translate-y-2 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/10 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900"
                         >
                             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 text-3xl transition group-hover:bg-orange-500 dark:bg-orange-500/10">
                                 {category.icon}
                             </div>
 
-                            <h3 className="mt-5 text-lg font-bold text-zinc-900 transition group-hover:text-orange-500 dark:text-white">
+                            <h3 className="mt-5 break-words text-lg font-bold text-zinc-900 transition group-hover:text-orange-500 dark:text-white">
                                 {category.name}
                             </h3>
 

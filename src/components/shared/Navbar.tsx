@@ -2,19 +2,71 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { authClient, useSession } from "@/lib/auth-client";
 
 const navLinks = [
     { name: "Home", href: "/" },
     { name: "Services", href: "/services" },
     { name: "About", href: "/about" },
-
 ];
 
 export default function Navbar() {
     const pathname = usePathname();
+    const router = useRouter();
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [theme, setTheme] = useState<"dark" | "light">("dark");
+    const [isSigningOut, setIsSigningOut] = useState(false);
+
+    const { data: session, isPending } = useSession();
+
+    const userRole = (
+        session?.user as { role?: string } | undefined
+    )?.role?.toLowerCase();
+
+    const dashboardPath =
+        userRole === "admin"
+            ? "/dashboard/admin"
+            : userRole === "technician"
+                ? "/dashboard/technician"
+                : userRole === "customer"
+                    ? "/dashboard/customer"
+                    : "/dashboard/profile";
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("fixmate-theme");
+
+        if (savedTheme === "light" || savedTheme === "dark") {
+            setTheme(savedTheme);
+        }
+    }, []);
+
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("fixmate-theme", theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme((current) => current === "dark" ? "light" : "dark");
+    };
+
+    const handleSignOut = async () => {
+        try {
+            setIsSigningOut(true);
+            await authClient.signOut();
+
+            setIsMenuOpen(false);
+            router.push("/");
+            router.refresh();
+        } catch (error) {
+            console.error("Sign out error:", error);
+            alert("Unable to sign out. Please try again.");
+        } finally {
+            setIsSigningOut(false);
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black">
@@ -58,19 +110,57 @@ export default function Navbar() {
 
                 {/* Desktop Auth Buttons */}
                 <div className="hidden items-center gap-5 md:flex">
-                    <Link
-                        href="/sign-in"
-                        className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
-                    >
-                        Sign In
-                    </Link>
 
-                    <Link
-                        href="/sign-up"
-                        className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600"
+                    {/* Theme Toggle */}
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label="Toggle color theme"
+                        title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        className="rounded-lg border border-white/20 px-3 py-2 text-lg text-white transition-colors hover:border-orange-500 hover:text-orange-500"
                     >
-                        Sign Up
-                    </Link>
+                        {theme === "dark" ? "☀️" : "🌙"}
+                    </button>
+
+                    {isPending ? (
+                        <span className="text-sm text-gray-400">
+                            Loading...
+                        </span>
+                    ) : session ? (
+                        <>
+                            <Link
+                                href={dashboardPath}
+                                className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
+                            >
+                                Dashboard
+                            </Link>
+
+                            <button
+                                type="button"
+                                onClick={handleSignOut}
+                                disabled={isSigningOut}
+                                className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600 disabled:opacity-50"
+                            >
+                                {isSigningOut ? "Signing Out..." : "Sign Out"}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href="/sign-in"
+                                className="text-sm font-semibold text-white transition-colors hover:text-orange-500"
+                            >
+                                Sign In
+                            </Link>
+
+                            <Link
+                                href="/sign-up"
+                                className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:bg-orange-600"
+                            >
+                                Sign Up
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile Menu Toggle */}
@@ -89,6 +179,7 @@ export default function Navbar() {
             {isMenuOpen && (
                 <div className="border-t border-white/10 bg-black px-5 py-5 md:hidden">
                     <div className="flex flex-col gap-5">
+
                         {navLinks.map((link) => {
                             const active = pathname === link.href;
 
@@ -105,22 +196,62 @@ export default function Navbar() {
                             );
                         })}
 
-                        <div className="flex items-center gap-5 border-t border-white/10 pt-5">
-                            <Link
-                                href="/login"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-sm font-semibold text-white hover:text-orange-500"
-                            >
-                                Login
-                            </Link>
+                        {/* Mobile Theme Toggle */}
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="flex items-center gap-3 border-t border-white/10 pt-5 text-left text-sm font-semibold text-white hover:text-orange-500"
+                        >
+                            <span className="text-xl">
+                                {theme === "dark" ? "☀️" : "🌙"}
+                            </span>
+                            {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        </button>
 
-                            <Link
-                                href="/register"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-                            >
-                                Get Started
-                            </Link>
+                        <div className="flex flex-wrap items-center gap-5 border-t border-white/10 pt-5">
+
+                            {isPending ? (
+                                <span className="text-sm text-gray-400">
+                                    Loading...
+                                </span>
+                            ) : session ? (
+                                <>
+                                    <Link
+                                        href={dashboardPath}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-sm font-semibold text-white hover:text-orange-500"
+                                    >
+                                        Dashboard
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSignOut}
+                                        disabled={isSigningOut}
+                                        className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                                    >
+                                        {isSigningOut ? "Signing Out..." : "Sign Out"}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        href="/sign-in"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="text-sm font-semibold text-white hover:text-orange-500"
+                                    >
+                                        Sign In
+                                    </Link>
+
+                                    <Link
+                                        href="/sign-up"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
+                                    >
+                                        Sign Up
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

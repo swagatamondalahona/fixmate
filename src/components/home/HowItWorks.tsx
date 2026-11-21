@@ -58,10 +58,6 @@ export default function HowItWorks() {
                             key={step.number}
                             className="group relative rounded-2xl border border-zinc-200 bg-zinc-50 p-7 text-center transition duration-300 hover:-translate-y-2 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/10 dark:border-zinc-800 dark:bg-zinc-900"
                         >
-                            <span className="absolute right-5 top-5 text-3xl font-extrabold text-orange-500/20">
-                                {step.number}
-                            </span>
-
                             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-orange-100 text-4xl transition group-hover:bg-orange-500 dark:bg-orange-500/10">
                                 {step.icon}
                             </div>
