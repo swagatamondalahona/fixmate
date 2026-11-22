@@ -1,15 +1,14 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
 export default function AddServicePage() {
-    const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -43,8 +42,19 @@ export default function AddServicePage() {
             return;
         }
 
-        if (!basePrice.trim() || !Number.isFinite(Number(basePrice)) || Number(basePrice) < 0) {
-            setError("Please enter a valid service price.");
+        if (!image.type.startsWith("image/")) {
+            setError("Please select a valid image file.");
+            return;
+        }
+
+        if (image.size > 5 * 1024 * 1024) {
+            setError("Image size must be less than 5 MB.");
+            return;
+        }
+
+        const parsedPrice = Number(basePrice);
+        if (!basePrice.trim() || !Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+            setError("Please enter a valid service price greater than 0.");
             return;
         }
 
@@ -54,7 +64,7 @@ export default function AddServicePage() {
             const tokenResponse = await authClient.token();
             const token = tokenResponse.data?.token;
 
-            if (!token) {
+            if (tokenResponse.error || !token) {
                 throw new Error("Authentication token not found. Please sign in again.");
             }
 
@@ -70,9 +80,15 @@ export default function AddServicePage() {
                 }
             );
 
-            const imageData = await imageResponse.json();
+            let imageData: { success?: boolean; data?: { url?: string } } | null = null;
+            try {
+                imageData = await imageResponse.json();
+            } catch {
+                imageData = null;
+            }
 
-            if (!imageResponse.ok || !imageData.success) {
+            const uploadedImageUrl = imageData?.data?.url;
+            if (!imageResponse.ok || !imageData?.success || !uploadedImageUrl) {
                 throw new Error("Image upload failed. Please try again.");
             }
 
@@ -84,21 +100,26 @@ export default function AddServicePage() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    title,
-                    description,
-                    category,
+                    title: title.trim(),
+                    description: description.trim(),
+                    category: category.trim(),
                     serviceMode,
-                    basePrice: Number(basePrice),
-                    estimatedDuration,
-                    serviceArea,
-                    image: imageData.data.url,
+                    basePrice: parsedPrice,
+                    estimatedDuration: estimatedDuration.trim(),
+                    serviceArea: serviceArea.trim(),
+                    image: uploadedImageUrl,
                 }),
             });
 
-            const data = await response.json();
+            let data: { success?: boolean; message?: string } | null = null;
+            try {
+                data = await response.json();
+            } catch {
+                data = null;
+            }
 
-            if (!response.ok || !data.success) {
-                throw new Error(data.message || "Failed to add service.");
+            if (!response.ok || !data?.success) {
+                throw new Error(data?.message || "Failed to add service.");
             }
 
             setMessage("Service submitted successfully! Waiting for admin approval.");
@@ -112,15 +133,9 @@ export default function AddServicePage() {
             setServiceArea("");
             setImage(null);
 
-            const fileInput = document.getElementById(
-                "service-image"
-            ) as HTMLInputElement | null;
-
-            if (fileInput) {
-                fileInput.value = "";
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
             }
-
-            router.refresh();
         } catch (err) {
             setError(
                 err instanceof Error
@@ -289,7 +304,7 @@ export default function AddServicePage() {
                                 </span>
                                 <input
                                     type="number"
-                                    min="0"
+                                    min="1"
                                     step="0.01"
                                     value={basePrice}
                                     onChange={(event) => setBasePrice(event.target.value)}
@@ -306,6 +321,7 @@ export default function AddServicePage() {
                             </label>
                             <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 transition hover:border-orange-500/50 dark:border-white/20 dark:bg-[#080808]">
                                 <input
+                                    ref={fileInputRef}
                                     id="service-image"
                                     type="file"
                                     accept="image/*"
