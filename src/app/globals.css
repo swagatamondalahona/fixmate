@@ -3,7 +3,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --background: #e5e7eb;
+  --background: #f4f4f5;
   --foreground: #18181b;
 }
 
@@ -24,7 +24,7 @@ html[data-theme="dark"] {
 /* Light Mode */
 html[data-theme="light"] {
   color-scheme: light;
-  --background: #e5e7eb;
+  --background: #f4f4f5;
   --foreground: #18181b;
 }
 
