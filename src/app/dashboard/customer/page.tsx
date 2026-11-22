@@ -4,6 +4,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import {
+    formatBDT,
+    formatStripePaymentError,
+    MIN_SERVICE_PRICE_BDT,
+    MIN_STRIPE_CHECKOUT_BDT,
+} from "@/lib/currency";
 
 type Booking = {
     _id: string;
@@ -198,16 +204,31 @@ export default function CustomerDashboardPage() {
     };
 
     // Stripe Checkout Payment
-    const handlePayment = async (bookingId: string) => {
+    const handlePayment = async (booking: Booking) => {
+        const payableAmount = Number(
+            booking.finalAmount ?? booking.basePrice ?? 0
+        );
+
+        if (
+            !Number.isFinite(payableAmount) ||
+            payableAmount < MIN_STRIPE_CHECKOUT_BDT
+        ) {
+            setError(
+                `Minimum online payment is ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe requires at least $0.50 USD). Current amount (${formatBDT(payableAmount)}) is too low — please contact the technician or admin to update the final amount.`
+            );
+            setMessage("");
+            return;
+        }
+
         try {
-            setPayingId(bookingId);
+            setPayingId(booking._id);
             setError("");
             setMessage("");
 
             const token = await getAuthToken();
 
             const response = await fetch(
-                `${API_URL}/api/payments/create-checkout-session`,
+                `${API_URL.replace(/\/+$/, "")}/api/payments/create-checkout-session`,
                 {
                     method: "POST",
                     headers: {
@@ -215,7 +236,7 @@ export default function CustomerDashboardPage() {
                         Authorization: `Bearer ${token}`,
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({ bookingId }),
+                    body: JSON.stringify({ bookingId: booking._id }),
                 }
             );
 
@@ -230,7 +251,9 @@ export default function CustomerDashboardPage() {
 
             if (!response.ok || result.success === false) {
                 throw new Error(
-                    result.message || "Unable to start payment."
+                    formatStripePaymentError(
+                        result.message || "Unable to start payment."
+                    )
                 );
             }
 
@@ -251,7 +274,7 @@ export default function CustomerDashboardPage() {
 
             setError(
                 err instanceof Error
-                    ? err.message
+                    ? formatStripePaymentError(err.message)
                     : "Payment could not be started."
             );
 
@@ -608,21 +631,50 @@ export default function CustomerDashboardPage() {
                                     )}
 
                                     {booking.status === "completed" &&
-                                        booking.paymentStatus === "unpaid" && (
-                                            <button
-                                                onClick={() =>
-                                                    handlePayment(booking._id)
-                                                }
-                                                disabled={
-                                                    payingId === booking._id
-                                                }
-                                                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                {payingId === booking._id
-                                                    ? "Redirecting..."
-                                                    : "💳 Pay Now"}
-                                            </button>
-                                        )}
+                                        booking.paymentStatus === "unpaid" && (() => {
+                                            const payableAmount = Number(
+                                                booking.finalAmount ??
+                                                    booking.basePrice ??
+                                                    0
+                                            );
+                                            const isBelowMinimum =
+                                                !Number.isFinite(payableAmount) ||
+                                                payableAmount <
+                                                    MIN_STRIPE_CHECKOUT_BDT;
+
+                                            return (
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <button
+                                                        onClick={() =>
+                                                            handlePayment(booking)
+                                                        }
+                                                        disabled={
+                                                            payingId ===
+                                                                booking._id ||
+                                                            isBelowMinimum
+                                                        }
+                                                        className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    >
+                                                        {payingId === booking._id
+                                                            ? "Redirecting..."
+                                                            : "💳 Pay Now"}
+                                                    </button>
+
+                                                    {isBelowMinimum && (
+                                                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                                                            Minimum online payment is{" "}
+                                                            {formatBDT(
+                                                                MIN_SERVICE_PRICE_BDT
+                                                            )}{" "}
+                                                            (Stripe requires at least
+                                                            $0.50 USD). Please ask the
+                                                            technician or admin to update
+                                                            the final amount.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
 
                                     {booking.paymentStatus === "paid" && (
                                         <span className="rounded-lg border border-green-500/30 bg-green-500/10 px-6 py-3 text-sm font-bold text-green-700 dark:text-green-400">

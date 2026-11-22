@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatBDT } from "@/lib/currency";
 
 interface Service {
     _id: string;
@@ -313,7 +314,7 @@ export default function AdminServicesPage() {
                                             <span className="text-zinc-900 dark:text-white">
                                                 Price:
                                             </span>{" "}
-                                            {service.basePrice}
+                                            {formatBDT(service.basePrice)}
                                         </p>
 
                                         <p>

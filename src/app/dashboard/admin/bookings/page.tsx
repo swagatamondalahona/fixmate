@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatBDT } from "@/lib/currency";
 
 interface Booking {
     _id: string;
@@ -353,7 +354,7 @@ export default function AdminBookingsPage() {
                                             </p>
 
                                             <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                {booking.basePrice}
+                                                {formatBDT(booking.basePrice)}
                                             </p>
                                         </div>
 
@@ -363,7 +364,10 @@ export default function AdminBookingsPage() {
                                             </p>
 
                                             <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                {booking.finalAmount ?? "Not set"}
+                                                {booking.finalAmount !== null &&
+                                                booking.finalAmount !== undefined
+                                                    ? formatBDT(booking.finalAmount)
+                                                    : "Not set"}
                                             </p>
                                         </div>
                                     </div>

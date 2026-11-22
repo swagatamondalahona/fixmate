@@ -3,8 +3,9 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatBDT, MIN_SERVICE_PRICE_BDT } from "@/lib/currency";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
 type Service = {
     _id: string;
@@ -160,6 +161,15 @@ export default function MyServicesPage() {
 
         if (!editingService || !API_URL) {
             showMessage("Unable to update service.", "error");
+            return;
+        }
+
+        const parsedPrice = Number(formData.basePrice);
+        if (!Number.isFinite(parsedPrice) || parsedPrice < MIN_SERVICE_PRICE_BDT) {
+            showMessage(
+                `Base price must be at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (minimum required for online payment).`,
+                "error"
+            );
             return;
         }
 
@@ -478,7 +488,7 @@ export default function MyServicesPage() {
                                         </span>
 
                                         <span className="text-sm font-bold text-orange-500">
-                                            ${service.basePrice}
+                                            {formatBDT(service.basePrice)}
                                         </span>
                                     </div>
 
@@ -644,12 +654,12 @@ export default function MyServicesPage() {
 
                                 <div>
                                     <label className={labelClass}>
-                                        Base Price
+                                        Base Price (৳ BDT — min {formatBDT(MIN_SERVICE_PRICE_BDT)})
                                     </label>
                                     <input
                                         type="number"
                                         required
-                                        min="1"
+                                        min={MIN_SERVICE_PRICE_BDT}
                                         step="0.01"
                                         value={formData.basePrice}
                                         onChange={(e) => handleInputChange("basePrice", e.target.value)}

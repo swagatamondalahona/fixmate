@@ -3,8 +3,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatBDT, MIN_SERVICE_PRICE_BDT } from "@/lib/currency";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
 type BookingStatus =
     | "requested"
@@ -110,9 +111,11 @@ export default function TechnicianRequestsPage() {
 
                 if (
                     !Number.isFinite(finalAmount) ||
-                    finalAmount <= 0
+                    finalAmount < MIN_SERVICE_PRICE_BDT
                 ) {
-                    alert("Please enter a valid final amount greater than zero.");
+                    alert(
+                        `Please enter a valid final amount of at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                    );
                     return;
                 }
             }
@@ -390,7 +393,7 @@ export default function TechnicianRequestsPage() {
                                             </h2>
 
                                             <p className="mt-2 text-sm text-orange-600 dark:text-orange-400">
-                                                Base Price: ${booking.basePrice}
+                                                Base Price: {formatBDT(booking.basePrice)}
                                             </p>
                                         </div>
                                     </div>
@@ -479,7 +482,7 @@ export default function TechnicianRequestsPage() {
                                                 </p>
 
                                                 <p className="mt-1 font-bold text-orange-600 dark:text-orange-400">
-                                                    ${booking.finalAmount}
+                                                    {formatBDT(booking.finalAmount)}
                                                 </p>
                                             </div>
                                         )}
@@ -548,13 +551,13 @@ export default function TechnicianRequestsPage() {
                                                     htmlFor={`amount-${booking._id}`}
                                                     className="block text-sm font-medium text-zinc-700 dark:text-gray-300"
                                                 >
-                                                    Final Amount ($)
+                                                    Final Amount (৳ BDT — min {formatBDT(MIN_SERVICE_PRICE_BDT)})
                                                 </label>
 
                                                 <input
                                                     id={`amount-${booking._id}`}
                                                     type="number"
-                                                    min="1"
+                                                    min={MIN_SERVICE_PRICE_BDT}
                                                     step="0.01"
                                                     value={finalAmounts[booking._id] || ""}
                                                     onChange={(event) =>
@@ -563,7 +566,7 @@ export default function TechnicianRequestsPage() {
                                                             [booking._id]: event.target.value,
                                                         }))
                                                     }
-                                                    placeholder="Enter final service amount"
+                                                    placeholder={`Enter final amount (minimum ${formatBDT(MIN_SERVICE_PRICE_BDT)})`}
                                                     className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
                                                 />
 
