@@ -1,36 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FixMate — Smart Device & Home Appliance Repair Service Platform
 
-## Getting Started
+FixMate is a full-stack repair service platform that connects customers with technicians for smart device and home appliance repair services.
 
-First, run the development server:
+Customers can explore repair services, book technicians, track booking status, and make secure payments through Stripe. Technicians can manage their services and customer bookings.
+
+## Live Website
+
+- **Frontend:** https://fixmate-gules-three.vercel.app
+- **Backend API:** https://fixmate-server-navy.vercel.app
+
+## GitHub Repositories
+
+- **Frontend:** https://github.com/swagatamondalahona/fixmate
+- **Backend:** https://github.com/swagatamondalahona/fixmate-server
+
+## Technologies Used
+
+### Frontend
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Better Auth
+- JWT Authentication
+- Stripe Payment Integration
+- ImgBB
+
+## Main Features
+
+### Authentication & Authorization
+- Customer and Technician registration
+- Secure login and authentication
+- Role-based access control
+- Protected dashboard routes
+
+### Customer Features
+- Browse approved repair services
+- Search and filter services
+- Book repair services
+- View booking history
+- Track booking status
+- Pay for completed services
+- View payment history
+
+### Technician Features
+- Create and manage repair services
+- Manage customer bookings
+- Accept or reject booking requests
+- Update repair progress
+- Mark repairs as completed
+
+### Payment Features
+- Stripe Checkout integration
+- Server-side payment verification
+- Payment history
+- Duplicate payment protection
+- Stripe webhook endpoint
+
+## Project Structure
+
+```text
+fixmate/
+├── public/
+├── src/
+│   ├── app/
+│   ├── components/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── lib/
+│   └── ...
+├── .env.local
+├── package.json
+└── README.md
+```
+
+## Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/swagatamondalahona/fixmate.git
+cd fixmate
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file in the project root.
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+Use the deployed backend URL when connecting to the live backend:
+
+```env
+NEXT_PUBLIC_API_URL=https://fixmate-server-navy.vercel.app
+```
+
+Add any other required authentication or application environment variables according to your project configuration.
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Backend Repository
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The backend source code and setup instructions are available here:
 
-## Learn More
+https://github.com/swagatamondalahona/fixmate-server
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The frontend is deployed on Vercel.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Live URL: https://fixmate-gules-three.vercel.app
 
-## Deploy on Vercel
+## Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Swagata Mondal**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Diploma in Computer Engineering Student
+
+GitHub: https://github.com/swagatamondalahona
+
+---
+
+Made with ❤️ for FixMate.
