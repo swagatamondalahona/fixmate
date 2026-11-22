@@ -3,7 +3,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { formatBDT } from "@/lib/currency";
+import {
+    formatBDT,
+    MIN_SERVICE_PRICE_BDT,
+    MIN_STRIPE_CHECKOUT_BDT,
+} from "@/lib/currency";
 
 interface Booking {
     _id: string;
@@ -37,6 +41,9 @@ export default function AdminBookingsPage() {
     const [filter, setFilter] = useState<BookingFilter>("all");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+    const [updatingId, setUpdatingId] = useState("");
+    const [amountInputs, setAmountInputs] = useState<Record<string, string>>({});
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -100,6 +107,76 @@ export default function AdminBookingsPage() {
     useEffect(() => {
         fetchBookings();
     }, [fetchBookings]);
+
+    const updateBookingAmount = async (bookingId: string) => {
+        try {
+            setError("");
+            setMessage("");
+
+            const finalAmount = Number(amountInputs[bookingId]);
+            if (
+                !Number.isFinite(finalAmount) ||
+                finalAmount < MIN_SERVICE_PRICE_BDT
+            ) {
+                setError(
+                    `Final amount must be at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                );
+                return;
+            }
+
+            if (!API_URL) {
+                throw new Error("Backend API URL is not configured.");
+            }
+
+            setUpdatingId(bookingId);
+            const token = await getAuthToken();
+
+            const response = await fetch(
+                `${API_URL}/api/admin/bookings/${bookingId}/final-amount`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ finalAmount }),
+                }
+            );
+
+            let result: { success?: boolean; message?: string } | null = null;
+            try {
+                result = await response.json();
+            } catch {
+                result = null;
+            }
+
+            if (!response.ok || !result?.success) {
+                throw new Error(
+                    result?.message || "Failed to update final amount."
+                );
+            }
+
+            setBookings((previous) =>
+                previous.map((item) =>
+                    item._id === bookingId
+                        ? { ...item, finalAmount }
+                        : item
+                )
+            );
+            setAmountInputs((previous) => {
+                const next = { ...previous };
+                delete next[bookingId];
+                return next;
+            });
+            setMessage(result.message || "Final amount updated successfully.");
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Something went wrong."
+            );
+        } finally {
+            setUpdatingId("");
+        }
+    };
 
     const filteredBookings = useMemo(() => {
         if (filter === "all") return bookings;
@@ -219,6 +296,15 @@ export default function AdminBookingsPage() {
                         className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-600 dark:text-red-400"
                     >
                         {error}
+                    </div>
+                )}
+
+                {message && (
+                    <div
+                        role="status"
+                        className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-700 dark:text-green-400"
+                    >
+                        {message}
                     </div>
                 )}
 
@@ -383,6 +469,75 @@ export default function AdminBookingsPage() {
                                             </p>
                                         </div>
                                     )}
+
+                                    {booking.status === "completed" &&
+                                        booking.paymentStatus !== "paid" && (
+                                            <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-white/10">
+                                                {(booking.finalAmount ?? 0) <
+                                                    MIN_STRIPE_CHECKOUT_BDT && (
+                                                    <p className="mb-3 text-xs text-amber-700 dark:text-amber-400">
+                                                        Final amount (
+                                                        {formatBDT(
+                                                            booking.finalAmount
+                                                        )}
+                                                        ) is below Stripe&apos;s
+                                                        minimum online payment (
+                                                        {formatBDT(
+                                                            MIN_SERVICE_PRICE_BDT
+                                                        )}
+                                                        ). Update it below so the
+                                                        customer can pay online.
+                                                    </p>
+                                                )}
+
+                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                    <input
+                                                        type="number"
+                                                        min={
+                                                            MIN_SERVICE_PRICE_BDT
+                                                        }
+                                                        step="0.01"
+                                                        value={
+                                                            amountInputs[
+                                                                booking._id
+                                                            ] ?? ""
+                                                        }
+                                                        onChange={(event) =>
+                                                            setAmountInputs(
+                                                                (previous) => ({
+                                                                    ...previous,
+                                                                    [booking._id]:
+                                                                        event
+                                                                            .target
+                                                                            .value,
+                                                                })
+                                                            )
+                                                        }
+                                                        placeholder={`Update final amount in ৳ (min ${MIN_SERVICE_PRICE_BDT})`}
+                                                        className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none focus:border-orange-500 sm:max-w-xs dark:border-white/10 dark:bg-black dark:text-white"
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            updateBookingAmount(
+                                                                booking._id
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            updatingId ===
+                                                            booking._id
+                                                        }
+                                                        className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
+                                                    >
+                                                        {updatingId ===
+                                                        booking._id
+                                                            ? "Saving..."
+                                                            : "Update Final Amount"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                             </article>
                         ))}

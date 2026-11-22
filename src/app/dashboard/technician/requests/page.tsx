@@ -3,7 +3,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { formatBDT, MIN_SERVICE_PRICE_BDT } from "@/lib/currency";
+import {
+    formatBDT,
+    MIN_SERVICE_PRICE_BDT,
+    MIN_STRIPE_CHECKOUT_BDT,
+} from "@/lib/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
@@ -155,6 +159,78 @@ export default function TechnicianRequestsPage() {
             }
 
             alert(result.message || "Booking status updated successfully.");
+
+            await fetchRequests();
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Something went wrong."
+            );
+        } finally {
+            setUpdatingId("");
+        }
+    };
+
+    const updateFinalAmount = async (bookingId: string) => {
+        try {
+            if (!API_URL) {
+                throw new Error("API URL is missing.");
+            }
+
+            const finalAmount = Number(finalAmounts[bookingId]);
+
+            if (
+                !Number.isFinite(finalAmount) ||
+                finalAmount < MIN_SERVICE_PRICE_BDT
+            ) {
+                alert(
+                    `Please enter a valid final amount of at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                );
+                return;
+            }
+
+            const tokenResponse = await authClient.token();
+            const token = tokenResponse.data?.token;
+
+            if (!token) {
+                throw new Error("Authentication token not found.");
+            }
+
+            setUpdatingId(bookingId);
+
+            const response = await fetch(
+                `${API_URL}/api/bookings/${bookingId}/final-amount`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ finalAmount }),
+                }
+            );
+
+            let result: { success?: boolean; message?: string } | null = null;
+            try {
+                result = await response.json();
+            } catch {
+                result = null;
+            }
+
+            if (!response.ok || !result?.success) {
+                throw new Error(
+                    result?.message || "Failed to update final amount."
+                );
+            }
+
+            alert(result.message || "Final amount updated successfully.");
+
+            setFinalAmounts((previous) => {
+                const next = { ...previous };
+                delete next[bookingId];
+                return next;
+            });
 
             await fetchRequests();
         } catch (err) {
@@ -588,9 +664,91 @@ export default function TechnicianRequestsPage() {
                                         )}
 
                                         {booking.status === "completed" && (
-                                            <p className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-700 dark:text-green-400">
-                                                ✓ Service Completed
-                                            </p>
+                                            <div className="space-y-3">
+                                                <p className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-700 dark:text-green-400">
+                                                    ✓ Service Completed
+                                                </p>
+
+                                                {booking.paymentStatus !== "paid" && (
+                                                    <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-[#080808]/70">
+                                                        {(booking.finalAmount ?? 0) <
+                                                            MIN_STRIPE_CHECKOUT_BDT && (
+                                                            <p className="text-xs text-amber-700 dark:text-amber-400">
+                                                                Current final amount (
+                                                                {formatBDT(
+                                                                    booking.finalAmount
+                                                                )}
+                                                                ) is below Stripe&apos;s
+                                                                minimum online payment (
+                                                                {formatBDT(
+                                                                    MIN_SERVICE_PRICE_BDT
+                                                                )}
+                                                                ). Update it below so the
+                                                                customer can pay online.
+                                                            </p>
+                                                        )}
+
+                                                        <label
+                                                            htmlFor={`update-amount-${booking._id}`}
+                                                            className="block text-xs font-medium text-zinc-700 dark:text-gray-300"
+                                                        >
+                                                            Update Final Amount (৳ BDT — min{" "}
+                                                            {formatBDT(
+                                                                MIN_SERVICE_PRICE_BDT
+                                                            )}
+                                                            )
+                                                        </label>
+
+                                                        <div className="flex flex-col gap-2 sm:flex-row">
+                                                            <input
+                                                                id={`update-amount-${booking._id}`}
+                                                                type="number"
+                                                                min={
+                                                                    MIN_SERVICE_PRICE_BDT
+                                                                }
+                                                                step="0.01"
+                                                                value={
+                                                                    finalAmounts[
+                                                                        booking._id
+                                                                    ] ?? ""
+                                                                }
+                                                                onChange={(event) =>
+                                                                    setFinalAmounts(
+                                                                        (previous) => ({
+                                                                            ...previous,
+                                                                            [booking._id]:
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                placeholder={`Min ${MIN_SERVICE_PRICE_BDT}`}
+                                                                className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
+                                                            />
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    updateFinalAmount(
+                                                                        booking._id
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    updatingId ===
+                                                                    booking._id
+                                                                }
+                                                                className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
+                                                            >
+                                                                {updatingId ===
+                                                                booking._id
+                                                                    ? "Saving..."
+                                                                    : "Update Amount"}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
 
                                         {booking.status === "rejected" && (
