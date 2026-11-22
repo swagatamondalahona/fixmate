@@ -29,8 +29,37 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var savedTheme = localStorage.getItem("fixmate-theme");
+                  var theme =
+                    savedTheme === "light" || savedTheme === "dark"
+                      ? savedTheme
+                      : "dark";
+
+                  document.documentElement.setAttribute(
+                    "data-theme",
+                    theme
+                  );
+                } catch (error) {
+                  document.documentElement.setAttribute(
+                    "data-theme",
+                    "dark"
+                  );
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
+
       <body className="min-h-full flex flex-col">
         <Suspense fallback={null}>
           <AppShell>{children}</AppShell>
