@@ -55,7 +55,7 @@ export default function PaymentSuccessPage() {
                 }
 
                 const apiURL =
-                    process.env.NEXT_PUBLIC_API_URL;
+                    process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
                 if (!apiURL) {
                     throw new Error(
