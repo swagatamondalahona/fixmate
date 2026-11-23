@@ -5,10 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import {
-    formatBDT,
+    formatUSD,
     formatStripePaymentError,
-    MIN_SERVICE_PRICE_BDT,
-    MIN_STRIPE_CHECKOUT_BDT,
+    MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
 
 type Booking = {
@@ -211,10 +210,10 @@ export default function CustomerDashboardPage() {
 
         if (
             !Number.isFinite(payableAmount) ||
-            payableAmount < MIN_STRIPE_CHECKOUT_BDT
+            payableAmount < MIN_STRIPE_CHECKOUT_USD
         ) {
             setError(
-                `Minimum online payment is ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe requires at least $0.50 USD). Current amount (${formatBDT(payableAmount)}) is too low — please contact the technician or admin to update the final amount.`
+                `Minimum online payment is ${formatUSD(MIN_STRIPE_CHECKOUT_USD, { decimals: true })} USD. Current amount (${formatUSD(payableAmount)}) is too low — please contact the technician or admin to update the final amount.`
             );
             setMessage("");
             return;
@@ -550,10 +549,7 @@ export default function CustomerDashboardPage() {
                                         </p>
 
                                         <p className="mt-2 font-bold text-orange-600 dark:text-orange-400">
-                                            ৳
-                                            {Number(
-                                                booking.basePrice || 0
-                                            ).toLocaleString("en-BD")}
+                                            {formatUSD(booking.basePrice)}
                                         </p>
                                     </div>
 
@@ -590,9 +586,7 @@ export default function CustomerDashboardPage() {
                                         <p className="mt-2 font-medium text-green-700 dark:text-green-400">
                                             {booking.finalAmount !== null &&
                                                 booking.finalAmount !== undefined
-                                                ? `৳${Number(
-                                                    booking.finalAmount
-                                                ).toLocaleString("en-BD")}`
+                                                ? formatUSD(booking.finalAmount)
                                                 : "Not set"}
                                         </p>
                                     </div>
@@ -640,7 +634,7 @@ export default function CustomerDashboardPage() {
                                             const isBelowMinimum =
                                                 !Number.isFinite(payableAmount) ||
                                                 payableAmount <
-                                                    MIN_STRIPE_CHECKOUT_BDT;
+                                                    MIN_STRIPE_CHECKOUT_USD;
 
                                             return (
                                                 <div className="flex flex-wrap items-center gap-3">
@@ -663,11 +657,11 @@ export default function CustomerDashboardPage() {
                                                     {isBelowMinimum && (
                                                         <p className="text-xs text-amber-700 dark:text-amber-400">
                                                             Minimum online payment is{" "}
-                                                            {formatBDT(
-                                                                MIN_SERVICE_PRICE_BDT
+                                                            {formatUSD(
+                                                                MIN_STRIPE_CHECKOUT_USD,
+                                                                { decimals: true }
                                                             )}{" "}
-                                                            (Stripe requires at least
-                                                            $0.50 USD). Please ask the
+                                                            USD. Please ask the
                                                             technician or admin to update
                                                             the final amount.
                                                         </p>

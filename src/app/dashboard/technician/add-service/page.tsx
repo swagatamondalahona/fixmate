@@ -3,7 +3,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
-import { formatBDT, MIN_SERVICE_PRICE_BDT } from "@/lib/currency";
+import { formatUSD, MIN_SERVICE_PRICE_USD } from "@/lib/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -57,10 +57,10 @@ export default function AddServicePage() {
         if (
             !basePrice.trim() ||
             !Number.isFinite(parsedPrice) ||
-            parsedPrice < MIN_SERVICE_PRICE_BDT
+            parsedPrice < MIN_SERVICE_PRICE_USD
         ) {
             setError(
-                `Base price must be at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (minimum required for online payment).`
+                `Base price must be at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (minimum required for online payment).`
             );
             return;
         }
@@ -303,19 +303,19 @@ export default function AddServicePage() {
 
                         <div>
                             <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
-                                Base Price (৳ BDT — min {formatBDT(MIN_SERVICE_PRICE_BDT)})
+                                Base Price ($ USD — min {formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})
                             </label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-orange-500">
-                                    ৳
+                                    $
                                 </span>
                                 <input
                                     type="number"
-                                    min={MIN_SERVICE_PRICE_BDT}
+                                    min={MIN_SERVICE_PRICE_USD}
                                     step="0.01"
                                     value={basePrice}
                                     onChange={(event) => setBasePrice(event.target.value)}
-                                    placeholder={`Enter service price (min ${MIN_SERVICE_PRICE_BDT})`}
+                                    placeholder={`Enter service price (min ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})`}
                                     required
                                     className={`${inputClass} pl-9`}
                                 />

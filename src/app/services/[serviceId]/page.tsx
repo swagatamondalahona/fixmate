@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { formatUSD } from "@/lib/currency";
 
 type Service = {
     _id: string;
@@ -373,7 +374,7 @@ function ServiceDetailsPageContent() {
                             </p>
 
                             <h2 className="mt-2 text-4xl font-extrabold text-orange-500 dark:text-orange-400">
-                                ৳{service.basePrice.toLocaleString("en-BD")}
+                                {formatUSD(service.basePrice)}
                             </h2>
 
                             <p className="mt-4 text-sm leading-6 text-zinc-500 dark:text-gray-500">

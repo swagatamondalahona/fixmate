@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { connection } from "next/server";
+import { formatUSD } from "@/lib/currency";
 
 interface Service {
     _id: string;
@@ -99,9 +100,7 @@ export default async function FeaturedServices() {
                                 service.technicianName?.trim() ||
                                 "Not available";
 
-                            const formattedPrice = Number(
-                                service.basePrice || 0
-                            ).toLocaleString("en-BD");
+                            const formattedPrice = formatUSD(service.basePrice);
 
                             return (
                                 <article
@@ -148,7 +147,7 @@ export default async function FeaturedServices() {
 
                                         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
                                             <p className="text-lg font-bold text-orange-500">
-                                                ৳{formattedPrice}
+                                                {formattedPrice}
                                             </p>
 
                                             <Link

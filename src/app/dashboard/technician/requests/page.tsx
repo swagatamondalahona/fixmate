@@ -4,9 +4,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import {
-    formatBDT,
-    MIN_SERVICE_PRICE_BDT,
-    MIN_STRIPE_CHECKOUT_BDT,
+    formatUSD,
+    MIN_SERVICE_PRICE_USD,
+    MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
@@ -115,10 +115,10 @@ export default function TechnicianRequestsPage() {
 
                 if (
                     !Number.isFinite(finalAmount) ||
-                    finalAmount < MIN_SERVICE_PRICE_BDT
+                    finalAmount < MIN_SERVICE_PRICE_USD
                 ) {
                     alert(
-                        `Please enter a valid final amount of at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                        `Please enter a valid final amount of at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (Stripe minimum online payment requirement).`
                     );
                     return;
                 }
@@ -182,10 +182,10 @@ export default function TechnicianRequestsPage() {
 
             if (
                 !Number.isFinite(finalAmount) ||
-                finalAmount < MIN_SERVICE_PRICE_BDT
+                finalAmount < MIN_SERVICE_PRICE_USD
             ) {
                 alert(
-                    `Please enter a valid final amount of at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                    `Please enter a valid final amount of at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (Stripe minimum online payment requirement).`
                 );
                 return;
             }
@@ -469,7 +469,7 @@ export default function TechnicianRequestsPage() {
                                             </h2>
 
                                             <p className="mt-2 text-sm text-orange-600 dark:text-orange-400">
-                                                Base Price: {formatBDT(booking.basePrice)}
+                                                Base Price: {formatUSD(booking.basePrice)}
                                             </p>
                                         </div>
                                     </div>
@@ -558,7 +558,7 @@ export default function TechnicianRequestsPage() {
                                                 </p>
 
                                                 <p className="mt-1 font-bold text-orange-600 dark:text-orange-400">
-                                                    {formatBDT(booking.finalAmount)}
+                                                    {formatUSD(booking.finalAmount)}
                                                 </p>
                                             </div>
                                         )}
@@ -627,13 +627,13 @@ export default function TechnicianRequestsPage() {
                                                     htmlFor={`amount-${booking._id}`}
                                                     className="block text-sm font-medium text-zinc-700 dark:text-gray-300"
                                                 >
-                                                    Final Amount (৳ BDT — min {formatBDT(MIN_SERVICE_PRICE_BDT)})
+                                                    Final Amount ($ USD — min {formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})
                                                 </label>
 
                                                 <input
                                                     id={`amount-${booking._id}`}
                                                     type="number"
-                                                    min={MIN_SERVICE_PRICE_BDT}
+                                                    min={MIN_SERVICE_PRICE_USD}
                                                     step="0.01"
                                                     value={finalAmounts[booking._id] || ""}
                                                     onChange={(event) =>
@@ -642,7 +642,7 @@ export default function TechnicianRequestsPage() {
                                                             [booking._id]: event.target.value,
                                                         }))
                                                     }
-                                                    placeholder={`Enter final amount (minimum ${formatBDT(MIN_SERVICE_PRICE_BDT)})`}
+                                                    placeholder={`Enter final amount (minimum ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})`}
                                                     className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
                                                 />
 
@@ -672,18 +672,19 @@ export default function TechnicianRequestsPage() {
                                                 {booking.paymentStatus !== "paid" && (
                                                     <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-[#080808]/70">
                                                         {(booking.finalAmount ?? 0) <
-                                                            MIN_STRIPE_CHECKOUT_BDT && (
+                                                            MIN_STRIPE_CHECKOUT_USD && (
                                                             <p className="text-xs text-amber-700 dark:text-amber-400">
                                                                 Current final amount (
-                                                                {formatBDT(
+                                                                {formatUSD(
                                                                     booking.finalAmount
                                                                 )}
                                                                 ) is below Stripe&apos;s
                                                                 minimum online payment (
-                                                                {formatBDT(
-                                                                    MIN_SERVICE_PRICE_BDT
-                                                                )}
-                                                                ). Update it below so the
+                                                                {formatUSD(
+                                                                    MIN_SERVICE_PRICE_USD,
+                                                                    { decimals: true }
+                                                                )}{" "}
+                                                                USD). Update it below so the
                                                                 customer can pay online.
                                                             </p>
                                                         )}
@@ -692,9 +693,10 @@ export default function TechnicianRequestsPage() {
                                                             htmlFor={`update-amount-${booking._id}`}
                                                             className="block text-xs font-medium text-zinc-700 dark:text-gray-300"
                                                         >
-                                                            Update Final Amount (৳ BDT — min{" "}
-                                                            {formatBDT(
-                                                                MIN_SERVICE_PRICE_BDT
+                                                            Update Final Amount ($ USD — min{" "}
+                                                            {formatUSD(
+                                                                MIN_SERVICE_PRICE_USD,
+                                                                { decimals: true }
                                                             )}
                                                             )
                                                         </label>
@@ -704,7 +706,7 @@ export default function TechnicianRequestsPage() {
                                                                 id={`update-amount-${booking._id}`}
                                                                 type="number"
                                                                 min={
-                                                                    MIN_SERVICE_PRICE_BDT
+                                                                    MIN_SERVICE_PRICE_USD
                                                                 }
                                                                 step="0.01"
                                                                 value={
@@ -723,7 +725,7 @@ export default function TechnicianRequestsPage() {
                                                                         })
                                                                     )
                                                                 }
-                                                                placeholder={`Min ${MIN_SERVICE_PRICE_BDT}`}
+                                                                placeholder={`Min ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })}`}
                                                                 className="flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
                                                             />
 

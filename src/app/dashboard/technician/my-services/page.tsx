@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
-import { formatBDT, MIN_SERVICE_PRICE_BDT } from "@/lib/currency";
+import { formatUSD, MIN_SERVICE_PRICE_USD } from "@/lib/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
@@ -165,9 +165,9 @@ export default function MyServicesPage() {
         }
 
         const parsedPrice = Number(formData.basePrice);
-        if (!Number.isFinite(parsedPrice) || parsedPrice < MIN_SERVICE_PRICE_BDT) {
+        if (!Number.isFinite(parsedPrice) || parsedPrice < MIN_SERVICE_PRICE_USD) {
             showMessage(
-                `Base price must be at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (minimum required for online payment).`,
+                `Base price must be at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (minimum required for online payment).`,
                 "error"
             );
             return;
@@ -488,7 +488,7 @@ export default function MyServicesPage() {
                                         </span>
 
                                         <span className="text-sm font-bold text-orange-500">
-                                            {formatBDT(service.basePrice)}
+                                            {formatUSD(service.basePrice)}
                                         </span>
                                     </div>
 
@@ -654,12 +654,12 @@ export default function MyServicesPage() {
 
                                 <div>
                                     <label className={labelClass}>
-                                        Base Price (৳ BDT — min {formatBDT(MIN_SERVICE_PRICE_BDT)})
+                                        Base Price ($ USD — min {formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})
                                     </label>
                                     <input
                                         type="number"
                                         required
-                                        min={MIN_SERVICE_PRICE_BDT}
+                                        min={MIN_SERVICE_PRICE_USD}
                                         step="0.01"
                                         value={formData.basePrice}
                                         onChange={(e) => handleInputChange("basePrice", e.target.value)}

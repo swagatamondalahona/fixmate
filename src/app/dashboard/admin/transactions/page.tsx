@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatUSD } from "@/lib/currency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -180,11 +181,11 @@ export default function AdminTransactionsPage() {
                             </p>
 
                             <p className="mt-3 text-4xl font-bold text-orange-500">
-                                {totalRevenue.toLocaleString()}
+                                {formatUSD(totalRevenue, { decimals: true })}
                             </p>
 
                             <p className="mt-2 text-xs text-zinc-500 dark:text-gray-500">
-                                {transactions[0]?.currency?.toUpperCase() || "Payment currency"}
+                                USD
                             </p>
                         </div>
                     </div>
@@ -215,7 +216,7 @@ export default function AdminTransactionsPage() {
                 ) : transactions.length === 0 ? (
                     <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-16 text-center shadow-xl dark:border-gray-800 dark:bg-gray-950/90">
                         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-500/20 bg-orange-500/10 text-3xl text-orange-500">
-                            ৳
+                            $
                         </div>
 
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
@@ -239,7 +240,7 @@ export default function AdminTransactionsPage() {
                                     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                                         <div className="flex items-start gap-3">
                                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-orange-500/20 bg-orange-500/10 text-xl text-orange-500">
-                                                ৳
+                                                $
                                             </div>
 
                                             <div className="min-w-0">
@@ -295,11 +296,26 @@ export default function AdminTransactionsPage() {
                                             </p>
 
                                             <p className="mt-2 text-lg font-bold text-orange-600 dark:text-orange-500">
-                                                {Number(
-                                                    transaction.amount || 0
-                                                ).toLocaleString()}{" "}
-                                                {transaction.currency?.toUpperCase() ||
-                                                    ""}
+                                                {transaction.currency &&
+                                                transaction.currency.toLowerCase() !==
+                                                    "usd"
+                                                    ? `${Number(
+                                                          transaction.amount ||
+                                                              0
+                                                      ).toLocaleString(
+                                                          "en-US",
+                                                          {
+                                                              minimumFractionDigits: 2,
+                                                              maximumFractionDigits: 2,
+                                                          }
+                                                      )} ${transaction.currency.toUpperCase()}`
+                                                    : `${formatUSD(
+                                                          Number(
+                                                              transaction.amount ||
+                                                                  0
+                                                          ),
+                                                          { decimals: true }
+                                                      )} USD`}
                                             </p>
                                         </div>
 

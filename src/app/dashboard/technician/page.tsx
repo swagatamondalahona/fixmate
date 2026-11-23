@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { formatUSD } from "@/lib/currency";
 
 type Booking = {
     _id: string;
@@ -347,7 +348,7 @@ export default function TechnicianDashboardPage() {
                                             Base Price
                                         </p>
                                         <p className="mt-2 font-bold text-orange-600 dark:text-orange-400">
-                                            ৳{booking.basePrice?.toLocaleString("en-BD")}
+                                            {formatUSD(booking.basePrice)}
                                         </p>
                                     </div>
 
@@ -374,8 +375,9 @@ export default function TechnicianDashboardPage() {
                                             Final Amount
                                         </p>
                                         <p className="mt-2 font-medium text-green-600 dark:text-green-400">
-                                            {booking.finalAmount !== null
-                                                ? `৳${booking.finalAmount.toLocaleString("en-BD")}`
+                                            {booking.finalAmount !== null &&
+                                            booking.finalAmount !== undefined
+                                                ? formatUSD(booking.finalAmount)
                                                 : "Not set"}
                                         </p>
                                     </div>

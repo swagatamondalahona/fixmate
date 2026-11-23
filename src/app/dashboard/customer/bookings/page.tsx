@@ -5,10 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import {
-    formatBDT,
+    formatUSD,
     formatStripePaymentError,
-    MIN_SERVICE_PRICE_BDT,
-    MIN_STRIPE_CHECKOUT_BDT,
+    MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
 
 type BookingStatus =
@@ -166,11 +165,11 @@ export default function CustomerBookingsPage() {
 
         if (
             !Number.isFinite(payableAmount) ||
-            payableAmount < MIN_STRIPE_CHECKOUT_BDT
+            payableAmount < MIN_STRIPE_CHECKOUT_USD
         ) {
             showToast(
                 "error",
-                `Minimum online payment is ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe requires at least $0.50 USD). Current amount (${formatBDT(payableAmount)}) is too low — please contact the technician or admin to update the final amount.`
+                `Minimum online payment is ${formatUSD(MIN_STRIPE_CHECKOUT_USD, { decimals: true })} USD. Current amount (${formatUSD(payableAmount)}) is too low — please contact the technician or admin to update the final amount.`
             );
             return;
         }
@@ -497,7 +496,7 @@ export default function CustomerBookingsPage() {
                                         </p>
 
                                         <p className="mt-2 font-bold text-orange-600 dark:text-orange-400">
-                                            {formatBDT(booking.basePrice)}
+                                            {formatUSD(booking.basePrice)}
                                         </p>
                                     </div>
 
@@ -509,7 +508,7 @@ export default function CustomerBookingsPage() {
                                         <p className="mt-2 font-bold text-green-600 dark:text-green-400">
                                             {booking.finalAmount !== null &&
                                             booking.finalAmount !== undefined
-                                                ? formatBDT(booking.finalAmount)
+                                                ? formatUSD(booking.finalAmount)
                                                 : "Not set"}
                                         </p>
                                     </div>
@@ -569,7 +568,7 @@ export default function CustomerBookingsPage() {
                                             const isBelowMinimum =
                                                 !Number.isFinite(payableAmount) ||
                                                 payableAmount <
-                                                    MIN_STRIPE_CHECKOUT_BDT;
+                                                    MIN_STRIPE_CHECKOUT_USD;
 
                                             return (
                                                 <div className="flex flex-wrap items-center gap-3">
@@ -592,11 +591,11 @@ export default function CustomerBookingsPage() {
                                                     {isBelowMinimum && (
                                                         <p className="text-xs text-amber-700 dark:text-amber-400">
                                                             Minimum online payment is{" "}
-                                                            {formatBDT(
-                                                                MIN_SERVICE_PRICE_BDT
+                                                            {formatUSD(
+                                                                MIN_STRIPE_CHECKOUT_USD,
+                                                                { decimals: true }
                                                             )}{" "}
-                                                            (Stripe requires at least
-                                                            $0.50 USD). Please ask the
+                                                            USD. Please ask the
                                                             technician or admin to update
                                                             the final amount.
                                                         </p>

@@ -4,9 +4,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import {
-    formatBDT,
-    MIN_SERVICE_PRICE_BDT,
-    MIN_STRIPE_CHECKOUT_BDT,
+    formatUSD,
+    MIN_SERVICE_PRICE_USD,
+    MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
 
 interface Booking {
@@ -116,10 +116,10 @@ export default function AdminBookingsPage() {
             const finalAmount = Number(amountInputs[bookingId]);
             if (
                 !Number.isFinite(finalAmount) ||
-                finalAmount < MIN_SERVICE_PRICE_BDT
+                finalAmount < MIN_SERVICE_PRICE_USD
             ) {
                 setError(
-                    `Final amount must be at least ${formatBDT(MIN_SERVICE_PRICE_BDT)} (Stripe minimum online payment requirement).`
+                    `Final amount must be at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (Stripe minimum online payment requirement).`
                 );
                 return;
             }
@@ -440,7 +440,7 @@ export default function AdminBookingsPage() {
                                             </p>
 
                                             <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                {formatBDT(booking.basePrice)}
+                                                {formatUSD(booking.basePrice)}
                                             </p>
                                         </div>
 
@@ -452,7 +452,7 @@ export default function AdminBookingsPage() {
                                             <p className="mt-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
                                                 {booking.finalAmount !== null &&
                                                 booking.finalAmount !== undefined
-                                                    ? formatBDT(booking.finalAmount)
+                                                    ? formatUSD(booking.finalAmount)
                                                     : "Not set"}
                                             </p>
                                         </div>
@@ -474,18 +474,19 @@ export default function AdminBookingsPage() {
                                         booking.paymentStatus !== "paid" && (
                                             <div className="mt-5 border-t border-zinc-200 pt-5 dark:border-white/10">
                                                 {(booking.finalAmount ?? 0) <
-                                                    MIN_STRIPE_CHECKOUT_BDT && (
+                                                    MIN_STRIPE_CHECKOUT_USD && (
                                                     <p className="mb-3 text-xs text-amber-700 dark:text-amber-400">
                                                         Final amount (
-                                                        {formatBDT(
+                                                        {formatUSD(
                                                             booking.finalAmount
                                                         )}
                                                         ) is below Stripe&apos;s
                                                         minimum online payment (
-                                                        {formatBDT(
-                                                            MIN_SERVICE_PRICE_BDT
-                                                        )}
-                                                        ). Update it below so the
+                                                        {formatUSD(
+                                                            MIN_SERVICE_PRICE_USD,
+                                                            { decimals: true }
+                                                        )}{" "}
+                                                        USD). Update it below so the
                                                         customer can pay online.
                                                     </p>
                                                 )}
@@ -494,7 +495,7 @@ export default function AdminBookingsPage() {
                                                     <input
                                                         type="number"
                                                         min={
-                                                            MIN_SERVICE_PRICE_BDT
+                                                            MIN_SERVICE_PRICE_USD
                                                         }
                                                         step="0.01"
                                                         value={
@@ -513,7 +514,7 @@ export default function AdminBookingsPage() {
                                                                 })
                                                             )
                                                         }
-                                                        placeholder={`Update final amount in ৳ (min ${MIN_SERVICE_PRICE_BDT})`}
+                                                        placeholder={`Update final amount in $ (min ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})`}
                                                         className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none focus:border-orange-500 sm:max-w-xs dark:border-white/10 dark:bg-black dark:text-white"
                                                     />
 

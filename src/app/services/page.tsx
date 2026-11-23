@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { formatUSD } from "@/lib/currency";
 
 type Service = {
     _id: string;
@@ -488,7 +489,7 @@ function ServicesContent() {
                                             </p>
 
                                             <p className="text-2xl font-extrabold text-orange-500">
-                                                ৳{service.basePrice}
+                                                {formatUSD(service.basePrice)}
                                             </p>
                                         </div>
 

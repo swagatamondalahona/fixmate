@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { formatUSD } from "@/lib/currency";
 
 const API_URL =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -117,10 +118,7 @@ export default function CustomerPaymentsPage() {
     );
 
     const formatAmount = (amount: number) => {
-        return `৳${amount.toLocaleString("en-BD", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        })}`;
+        return formatUSD(amount, { decimals: true });
     };
 
     const formatDate = (date?: string) => {
