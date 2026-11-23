@@ -13,6 +13,8 @@ type Payment = {
     _id: string;
     bookingId: string;
     serviceTitle: string;
+    technicianName?: string;
+    technicianEmail?: string;
     transactionId: string;
     amount: number;
     currency: string;
@@ -267,6 +269,7 @@ export default function CustomerPaymentsPage() {
                                 <thead className="bg-zinc-100 text-xs uppercase tracking-wider text-zinc-500 dark:bg-white/[0.03] dark:text-gray-500">
                                     <tr>
                                         <th className="px-6 py-4">Service</th>
+                                        <th className="px-6 py-4">Technician</th>
                                         <th className="px-6 py-4">Booking ID</th>
                                         <th className="px-6 py-4">Transaction ID</th>
                                         <th className="px-6 py-4">Amount</th>
@@ -283,6 +286,12 @@ export default function CustomerPaymentsPage() {
                                         >
                                             <td className="px-6 py-5 font-semibold">
                                                 {payment.serviceTitle || "Service"}
+                                            </td>
+
+                                            <td className="px-6 py-5 text-zinc-700 dark:text-gray-300">
+                                                {payment.technicianName ||
+                                                    payment.technicianEmail ||
+                                                    "Verified Technician"}
                                             </td>
 
                                             <td className="px-6 py-5 text-zinc-600 dark:text-gray-400">

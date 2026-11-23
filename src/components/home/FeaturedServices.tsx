@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { formatUSD } from "@/lib/currency";
+import { formatServiceMode } from "@/lib/constants";
 
 interface Service {
     _id: string;
@@ -141,7 +142,7 @@ export default async function FeaturedServices() {
                                                 <span className="font-semibold text-zinc-800 dark:text-zinc-300">
                                                     Mode:
                                                 </span>{" "}
-                                                {service.serviceMode || "Not specified"}
+                                                {formatServiceMode(service.serviceMode)}
                                             </p>
                                         </div>
 

@@ -2,8 +2,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { formatUSD } from "@/lib/currency";
+import { getBookingStatusStyle } from "@/lib/constants";
+import ConfirmModal from "@/components/shared/ConfirmModal";
+import DashboardChart from "@/components/shared/DashboardChart";
+
+type ServiceSummary = {
+    _id: string;
+    approvalStatus: "pending" | "approved" | "rejected";
+    isAvailable?: boolean;
+};
 
 type Booking = {
     _id: string;
@@ -22,15 +32,18 @@ type Booking = {
     createdAt: string;
 };
 
-const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
 
 export default function TechnicianDashboardPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [services, setServices] = useState<ServiceSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [updatingId, setUpdatingId] = useState("");
+    const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -44,25 +57,33 @@ export default function TechnicianDashboardPage() {
                 throw new Error("Please sign in to access Technician Dashboard.");
             }
 
-            const response = await fetch(
-                `${API_URL}/api/bookings/technician`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+            const [bookingsResponse, servicesResponse] = await Promise.all([
+                fetch(`${API_URL}/api/bookings/technician`, {
+                    headers: { Authorization: `Bearer ${token}` },
                     cache: "no-store",
-                }
-            );
+                }),
+                fetch(`${API_URL}/api/services/my-services`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    cache: "no-store",
+                }),
+            ]);
 
-            const result = await response.json();
+            const [bookingsResult, servicesResult] = await Promise.all([
+                bookingsResponse.json(),
+                servicesResponse.json(),
+            ]);
 
-            if (!response.ok || !result.success) {
+            if (!bookingsResponse.ok || !bookingsResult.success) {
                 throw new Error(
-                    result.message || "Failed to fetch bookings."
+                    bookingsResult.message || "Failed to fetch bookings."
                 );
             }
 
-            setBookings(result.data || []);
+            setBookings(bookingsResult.data || []);
+
+            if (servicesResponse.ok && servicesResult.success) {
+                setServices(servicesResult.data || []);
+            }
         } catch (err) {
             setError(
                 err instanceof Error
@@ -114,19 +135,22 @@ export default function TechnicianDashboardPage() {
                 );
             }
 
-            setMessage(
+            const successMsg =
                 status === "accepted"
                     ? "Booking accepted successfully!"
-                    : "Booking rejected successfully!"
-            );
+                    : "Booking rejected successfully!";
+            setMessage(successMsg);
+            toast.success(successMsg);
+            setRejectTargetId(null);
 
             await fetchBookings();
         } catch (err) {
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Something went wrong."
-            );
+                    : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setUpdatingId("");
         }
@@ -140,48 +164,54 @@ export default function TechnicianDashboardPage() {
         (booking) => booking.status === "accepted"
     ).length;
 
+    const inProgressCount = bookings.filter(
+        (booking) => booking.status === "in-progress"
+    ).length;
+
     const completedCount = bookings.filter(
         (booking) => booking.status === "completed"
     ).length;
 
-    const getStatusStyle = (status: Booking["status"]) => {
-        switch (status) {
-            case "requested":
-                return "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400";
-            case "accepted":
-                return "bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400";
-            case "in-progress":
-                return "bg-purple-500/10 text-purple-700 border-purple-500/20 dark:text-purple-400";
-            case "completed":
-                return "bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400";
-            case "rejected":
-            case "cancelled":
-                return "bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400";
-            default:
-                return "bg-gray-500/10 text-gray-700 border-gray-500/20 dark:text-gray-400";
-        }
-    };
+    const closedCount = bookings.filter(
+        (booking) =>
+            booking.status === "rejected" || booking.status === "cancelled"
+    ).length;
+
+    const approvedServicesCount = services.filter(
+        (service) => service.approvalStatus === "approved"
+    ).length;
+
+    const pendingServicesCount = services.filter(
+        (service) => service.approvalStatus === "pending"
+    ).length;
+
+    const rejectedServicesCount = services.filter(
+        (service) => service.approvalStatus === "rejected"
+    ).length;
+
+    const getStatusStyle = (status: Booking["status"]) =>
+        getBookingStatusStyle(status);
 
     const statistics = [
         {
-            title: "Total Bookings",
-            value: bookings.length,
+            title: "Total Services",
+            value: services.length,
             color: "text-orange-600 dark:text-orange-400",
+        },
+        {
+            title: "Approved Services",
+            value: approvedServicesCount,
+            color: "text-green-600 dark:text-green-400",
         },
         {
             title: "Pending Requests",
             value: requestedCount,
-            color: "text-yellow-600 dark:text-yellow-400",
-        },
-        {
-            title: "Accepted Bookings",
-            value: acceptedCount,
             color: "text-blue-600 dark:text-blue-400",
         },
         {
-            title: "Completed Bookings",
+            title: "Completed Jobs",
             value: completedCount,
-            color: "text-green-600 dark:text-green-400",
+            color: "text-indigo-600 dark:text-indigo-400",
         },
     ];
 
@@ -217,7 +247,7 @@ export default function TechnicianDashboardPage() {
                 </div>
 
                 {/* Statistics */}
-                <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {statistics.map((item) => (
                         <div
                             key={item.title}
@@ -234,6 +264,65 @@ export default function TechnicianDashboardPage() {
                             </h2>
                         </div>
                     ))}
+                </div>
+
+                {/* Overview Charts */}
+                <div className="mb-10 grid gap-6 lg:grid-cols-2">
+                    <DashboardChart
+                        title="Service Listings Status"
+                        subtitle="Approval status across your repair services"
+                        totalLabel="Services"
+                        data={[
+                            {
+                                label: "Approved",
+                                value: approvedServicesCount,
+                                color: "#22c55e",
+                            },
+                            {
+                                label: "Pending",
+                                value: pendingServicesCount,
+                                color: "#f59e0b",
+                            },
+                            {
+                                label: "Rejected",
+                                value: rejectedServicesCount,
+                                color: "#ef4444",
+                            },
+                        ]}
+                    />
+
+                    <DashboardChart
+                        title="Repair Job Pipeline"
+                        subtitle="Current breakdown of customer requests"
+                        totalLabel="Bookings"
+                        data={[
+                            {
+                                label: "Requested",
+                                value: requestedCount,
+                                color: "#3b82f6",
+                            },
+                            {
+                                label: "Accepted",
+                                value: acceptedCount,
+                                color: "#6366f1",
+                            },
+                            {
+                                label: "In Progress",
+                                value: inProgressCount,
+                                color: "#f59e0b",
+                            },
+                            {
+                                label: "Completed",
+                                value: completedCount,
+                                color: "#22c55e",
+                            },
+                            {
+                                label: "Rejected / Cancelled",
+                                value: closedCount,
+                                color: "#71717a",
+                            },
+                        ]}
+                    />
                 </div>
 
                 {/* Booking Section */}
@@ -415,10 +504,7 @@ export default function TechnicianDashboardPage() {
 
                                         <button
                                             onClick={() =>
-                                                updateBookingStatus(
-                                                    booking._id,
-                                                    "rejected"
-                                                )
+                                                setRejectTargetId(booking._id)
                                             }
                                             disabled={updatingId === booking._id}
                                             className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-600 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
@@ -434,6 +520,21 @@ export default function TechnicianDashboardPage() {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                open={Boolean(rejectTargetId)}
+                title="Reject Repair Request?"
+                description="Are you sure you want to reject this customer booking? This action cannot be undone."
+                confirmLabel="Yes, Reject Request"
+                cancelLabel="Keep Request"
+                loading={Boolean(updatingId)}
+                onConfirm={() => {
+                    if (rejectTargetId) {
+                        updateBookingStatus(rejectTargetId, "rejected");
+                    }
+                }}
+                onCancel={() => setRejectTargetId(null)}
+            />
         </main>
     );
 }

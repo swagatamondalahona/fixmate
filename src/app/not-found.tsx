@@ -120,7 +120,7 @@ export default function NotFound() {
                 <p className="mx-auto mb-8 max-w-md text-sm leading-7 text-zinc-600 dark:text-zinc-400">
                     Oops! The page you are looking for may have been moved,
                     removed, or is temporarily unavailable.
-                    Let's get you back to FixMate.
+                    Let&apos;s get you back to FixMate.
                 </p>
 
                 <Link

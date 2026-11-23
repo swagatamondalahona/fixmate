@@ -3,12 +3,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import {
     formatUSD,
     formatStripePaymentError,
     MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
+import { getBookingStatusStyle } from "@/lib/constants";
+import ConfirmModal from "@/components/shared/ConfirmModal";
+import DashboardChart from "@/components/shared/DashboardChart";
 
 type Booking = {
     _id: string;
@@ -48,6 +52,7 @@ export default function CustomerDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState("");
     const [payingId, setPayingId] = useState("");
+    const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
 
@@ -147,12 +152,10 @@ export default function CustomerDashboardPage() {
     }, [fetchBookings]);
 
     // Cancel Booking
-    const cancelBooking = async (bookingId: string) => {
-        const confirmed = window.confirm(
-            "Are you sure you want to cancel this booking?"
-        );
+    const confirmCancelBooking = async () => {
+        if (!cancelTargetId) return;
 
-        if (!confirmed) return;
+        const bookingId = cancelTargetId;
 
         try {
             setUpdatingId(bookingId);
@@ -162,7 +165,7 @@ export default function CustomerDashboardPage() {
             const token = await getAuthToken();
 
             const response = await fetch(
-                `${API_URL}/api/bookings/${bookingId}/cancel`,
+                `${API_URL.replace(/\/+$/, "")}/api/bookings/${bookingId}/cancel`,
                 {
                     method: "PATCH",
                     headers: {
@@ -187,16 +190,19 @@ export default function CustomerDashboardPage() {
                 );
             }
 
+            setCancelTargetId(null);
             setMessage("Booking cancelled successfully!");
+            toast.success("Booking cancelled successfully!");
             await fetchBookings();
         } catch (err) {
             console.error("Cancel Booking Error:", err);
 
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Failed to cancel booking."
-            );
+                    : "Failed to cancel booking.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setUpdatingId("");
         }
@@ -271,11 +277,12 @@ export default function CustomerDashboardPage() {
         } catch (err) {
             console.error("Payment Error:", err);
 
-            setError(
+            const msg =
                 err instanceof Error
                     ? formatStripePaymentError(err.message)
-                    : "Payment could not be started."
-            );
+                    : "Payment could not be started.";
+            setError(msg);
+            toast.error(msg);
 
             setPayingId("");
         }
@@ -290,28 +297,27 @@ export default function CustomerDashboardPage() {
         (booking) => booking.status === "accepted"
     ).length;
 
+    const inProgressCount = bookings.filter(
+        (booking) => booking.status === "in-progress"
+    ).length;
+
+    const activeCount = acceptedCount + inProgressCount;
+
     const completedCount = bookings.filter(
         (booking) => booking.status === "completed"
     ).length;
 
-    const getStatusStyle = (status: Booking["status"]) => {
-        const styles: Record<Booking["status"], string> = {
-            requested:
-                "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-            accepted:
-                "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-            rejected:
-                "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
-            "in-progress":
-                "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
-            completed:
-                "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400",
-            cancelled:
-                "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-400",
-        };
+    const cancelledOrRejectedCount = bookings.filter(
+        (booking) =>
+            booking.status === "cancelled" || booking.status === "rejected"
+    ).length;
 
-        return styles[status] || styles.requested;
-    };
+    const paidCount = bookings.filter(
+        (booking) => booking.paymentStatus === "paid"
+    ).length;
+
+    const getStatusStyle = (status: Booking["status"]) =>
+        getBookingStatusStyle(status);
 
     const formatDate = (date: string) => {
         if (!date) return "Not available";
@@ -384,27 +390,27 @@ export default function CustomerDashboardPage() {
                 </div>
 
                 {/* Statistics */}
-                <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {[
                         {
-                            title: "Total Bookings",
+                            title: "Total Requests",
                             value: bookings.length,
                             color: "text-orange-600 dark:text-orange-400",
                         },
                         {
-                            title: "Pending Requests",
-                            value: requestedCount,
-                            color: "text-yellow-700 dark:text-yellow-400",
+                            title: "Active Jobs",
+                            value: activeCount,
+                            color: "text-amber-600 dark:text-amber-400",
                         },
                         {
-                            title: "Accepted Bookings",
-                            value: acceptedCount,
-                            color: "text-blue-700 dark:text-blue-400",
-                        },
-                        {
-                            title: "Completed Bookings",
+                            title: "Completed Jobs",
                             value: completedCount,
                             color: "text-green-700 dark:text-green-400",
+                        },
+                        {
+                            title: "Paid Jobs",
+                            value: paidCount,
+                            color: "text-blue-700 dark:text-blue-400",
                         },
                     ].map((item) => (
                         <div
@@ -422,6 +428,42 @@ export default function CustomerDashboardPage() {
                             </h2>
                         </div>
                     ))}
+                </div>
+
+                {/* Visual Chart */}
+                <div className="mb-10">
+                    <DashboardChart
+                        title="Repair Requests Breakdown"
+                        subtitle="Live status distribution across all your bookings"
+                        totalLabel="Requests"
+                        data={[
+                            {
+                                label: "Requested",
+                                value: requestedCount,
+                                color: "#3b82f6",
+                            },
+                            {
+                                label: "Accepted",
+                                value: acceptedCount,
+                                color: "#6366f1",
+                            },
+                            {
+                                label: "In Progress",
+                                value: inProgressCount,
+                                color: "#f59e0b",
+                            },
+                            {
+                                label: "Completed",
+                                value: completedCount,
+                                color: "#22c55e",
+                            },
+                            {
+                                label: "Rejected / Cancelled",
+                                value: cancelledOrRejectedCount,
+                                color: "#71717a",
+                            },
+                        ]}
+                    />
                 </div>
 
                 {/* Booking Section Header */}
@@ -611,7 +653,7 @@ export default function CustomerDashboardPage() {
                                     {booking.status === "requested" && (
                                         <button
                                             onClick={() =>
-                                                cancelBooking(booking._id)
+                                                setCancelTargetId(booking._id)
                                             }
                                             disabled={
                                                 updatingId === booking._id
@@ -704,6 +746,17 @@ export default function CustomerDashboardPage() {
                     FixMate • Customer Dashboard
                 </p>
             </div>
+
+            <ConfirmModal
+                open={Boolean(cancelTargetId)}
+                title="Cancel Repair Request?"
+                description="Are you sure you want to cancel this booking? This action cannot be undone."
+                confirmLabel="Yes, Cancel Booking"
+                cancelLabel="Keep Booking"
+                loading={Boolean(updatingId)}
+                onConfirm={confirmCancelBooking}
+                onCancel={() => setCancelTargetId(null)}
+            />
         </main>
     );
 }

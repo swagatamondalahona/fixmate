@@ -2,8 +2,14 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { formatUSD, MIN_SERVICE_PRICE_USD } from "@/lib/currency";
+import {
+    formatServiceMode,
+    SERVICE_CATEGORIES,
+    SERVICE_MODES,
+} from "@/lib/constants";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
@@ -37,8 +43,8 @@ type ServiceForm = {
 const initialForm: ServiceForm = {
     title: "",
     description: "",
-    category: "",
-    serviceMode: "On-site",
+    category: "Smartphone",
+    serviceMode: "Home Visit",
     basePrice: "",
     estimatedDuration: "",
     serviceArea: "",
@@ -55,6 +61,7 @@ export default function MyServicesPage() {
 
     const [deleteService, setDeleteService] = useState<Service | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [togglingId, setTogglingId] = useState("");
 
     const [message, setMessage] = useState("");
     const [messageType, setMessageType] = useState<"success" | "error">("success");
@@ -114,6 +121,11 @@ export default function MyServicesPage() {
     ) => {
         setMessage(text);
         setMessageType(type);
+        if (type === "success") {
+            toast.success(text);
+        } else {
+            toast.error(text);
+        }
     };
 
     const getStatusStyle = (status: Service["approvalStatus"]) => {
@@ -134,14 +146,83 @@ export default function MyServicesPage() {
         setFormData({
             title: service.title || "",
             description: service.description || "",
-            category: service.category || "",
-            serviceMode: service.serviceMode || "On-site",
+            category: service.category || "Smartphone",
+            serviceMode: formatServiceMode(service.serviceMode),
             basePrice: String(service.basePrice ?? ""),
             estimatedDuration: service.estimatedDuration || "",
             serviceArea: service.serviceArea || "",
         });
 
         setMessage("");
+    };
+
+    // Toggle Service Availability
+    const handleToggleAvailability = async (service: Service) => {
+        if (!API_URL) {
+            showMessage("API URL is missing.", "error");
+            return;
+        }
+
+        try {
+            setTogglingId(service._id);
+            setMessage("");
+
+            const tokenResponse = await authClient.token();
+            const token = tokenResponse.data?.token;
+
+            if (!token) {
+                throw new Error(
+                    "Authentication token not found. Please sign in again."
+                );
+            }
+
+            const nextAvailability = !service.isAvailable;
+
+            const response = await fetch(
+                `${API_URL}/api/services/${service._id}/availability`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ isAvailable: nextAvailability }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Failed to update availability."
+                );
+            }
+
+            setServices((previous) =>
+                previous.map((item) =>
+                    item._id === service._id
+                        ? { ...item, isAvailable: nextAvailability }
+                        : item
+                )
+            );
+
+            showMessage(
+                result.message ||
+                    (nextAvailability
+                        ? "Service is now available."
+                        : "Service marked unavailable."),
+                "success"
+            );
+        } catch (err) {
+            showMessage(
+                err instanceof Error
+                    ? err.message
+                    : "Unable to toggle service availability.",
+                "error"
+            );
+        } finally {
+            setTogglingId("");
+        }
     };
 
     // Update Form Values
@@ -506,7 +587,7 @@ export default function MyServicesPage() {
                                                 Service Mode
                                             </span>
                                             <span className="text-right text-zinc-800 dark:text-gray-200">
-                                                {service.serviceMode || "Not specified"}
+                                                {formatServiceMode(service.serviceMode)}
                                             </span>
                                         </div>
 
@@ -528,13 +609,38 @@ export default function MyServicesPage() {
                                             </span>
                                         </div>
 
-                                        <div className="flex justify-between gap-3">
+                                        <div className="flex items-center justify-between gap-3">
                                             <span className="text-zinc-500 dark:text-gray-500">
                                                 Availability
                                             </span>
-                                            <span className={service.isAvailable ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}>
-                                                {service.isAvailable ? "Available" : "Unavailable"}
-                                            </span>
+
+                                            <button
+                                                type="button"
+                                                role="switch"
+                                                aria-checked={service.isAvailable}
+                                                disabled={togglingId === service._id}
+                                                onClick={() =>
+                                                    handleToggleAvailability(service)
+                                                }
+                                                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition disabled:opacity-50 ${
+                                                    service.isAvailable
+                                                        ? "border-green-500/30 bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400"
+                                                        : "border-zinc-300 bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:border-white/15 dark:bg-white/5 dark:text-zinc-400"
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`h-2 w-2 rounded-full ${
+                                                        service.isAvailable
+                                                            ? "bg-green-500"
+                                                            : "bg-zinc-400"
+                                                    }`}
+                                                />
+                                                {togglingId === service._id
+                                                    ? "Updating..."
+                                                    : service.isAvailable
+                                                        ? "Available (Turn Off)"
+                                                        : "Hidden (Turn On)"}
+                                            </button>
                                         </div>
                                     </div>
 
@@ -628,13 +734,25 @@ export default function MyServicesPage() {
                                     <label className={labelClass}>
                                         Category
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         required
                                         value={formData.category}
                                         onChange={(e) => handleInputChange("category", e.target.value)}
                                         className={inputClass}
-                                    />
+                                    >
+                                        {Array.from(
+                                            new Set([
+                                                ...SERVICE_CATEGORIES,
+                                                ...(formData.category
+                                                    ? [formData.category]
+                                                    : []),
+                                            ])
+                                        ).map((item) => (
+                                            <option key={item} value={item}>
+                                                {item}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div>
@@ -647,8 +765,11 @@ export default function MyServicesPage() {
                                         onChange={(e) => handleInputChange("serviceMode", e.target.value)}
                                         className={inputClass}
                                     >
-                                        <option value="On-site">On-site</option>
-                                        <option value="Remote">Remote</option>
+                                        {SERVICE_MODES.map((item) => (
+                                            <option key={item} value={item}>
+                                                {item}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
 

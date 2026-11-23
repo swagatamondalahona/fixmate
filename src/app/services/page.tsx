@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatUSD } from "@/lib/currency";
+import {
+    formatServiceMode,
+    SERVICE_CATEGORIES,
+    SERVICE_MODES,
+} from "@/lib/constants";
 
 type Service = {
     _id: string;
@@ -21,16 +26,7 @@ type Service = {
     createdAt: string;
 };
 
-const categories = [
-    "All Categories",
-    "Smartphone",
-    "Laptop & PC",
-    "AC",
-    "Refrigerator",
-    "TV",
-    "Washing Machine",
-    "Electrical",
-];
+const categories = ["All Categories", ...SERVICE_CATEGORIES];
 
 function getServiceIcon(category: string) {
     const value = category.toLowerCase();
@@ -331,8 +327,11 @@ function ServicesContent() {
                                 className={`${filterInputClass} cursor-pointer`}
                             >
                                 <option value="All Modes">All Modes</option>
-                                <option value="On-site">On-site</option>
-                                <option value="Remote">Remote</option>
+                                {SERVICE_MODES.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -452,9 +451,7 @@ function ServicesContent() {
                                         </span>
 
                                         <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1.5 text-xs text-zinc-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-400">
-                                            {service.serviceMode === "On-site"
-                                                ? "Home Visit"
-                                                : service.serviceMode}
+                                            {formatServiceMode(service.serviceMode)}
                                         </span>
                                     </div>
 

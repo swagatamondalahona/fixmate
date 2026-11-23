@@ -2,14 +2,20 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { authClient, useSession } from "@/lib/auth-client";
 import { formatUSD, MIN_SERVICE_PRICE_USD } from "@/lib/currency";
+import { SERVICE_CATEGORIES, SERVICE_MODES } from "@/lib/constants";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
 export default function AddServicePage() {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const { data: session } = useSession();
+    const techUser = session?.user as
+        | { name?: string; email?: string }
+        | undefined;
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -130,6 +136,7 @@ export default function AddServicePage() {
             }
 
             setMessage("Service submitted successfully! Waiting for admin approval.");
+            toast.success("Service submitted! Waiting for admin approval.");
 
             setTitle("");
             setDescription("");
@@ -144,11 +151,12 @@ export default function AddServicePage() {
                 fileInputRef.current.value = "";
             }
         } catch (err) {
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Something went wrong. Please try again."
-            );
+                    : "Something went wrong. Please try again.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -210,6 +218,31 @@ export default function AddServicePage() {
                     </div>
 
                     <div className="space-y-6">
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
+                                    Technician Name (Read-only)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={techUser?.name || ""}
+                                    readOnly
+                                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-zinc-500 outline-none dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
+                                    Technician Email (Read-only)
+                                </label>
+                                <input
+                                    type="email"
+                                    value={techUser?.email || ""}
+                                    readOnly
+                                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-zinc-500 outline-none dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400"
+                                />
+                            </div>
+                        </div>
 
                         <div>
                             <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
@@ -244,14 +277,25 @@ export default function AddServicePage() {
                                 <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-200">
                                     Category
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     value={category}
                                     onChange={(event) => setCategory(event.target.value)}
-                                    placeholder="Example: Laptop Repair"
                                     required
-                                    className={inputClass}
-                                />
+                                    className={`${inputClass} appearance-none`}
+                                >
+                                    <option value="" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">
+                                        Select category
+                                    </option>
+                                    {SERVICE_CATEGORIES.map((item) => (
+                                        <option
+                                            key={item}
+                                            value={item}
+                                            className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white"
+                                        >
+                                            {item}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
@@ -264,9 +308,18 @@ export default function AddServicePage() {
                                     required
                                     className={`${inputClass} appearance-none`}
                                 >
-                                    <option value="" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">Select service mode</option>
-                                    <option value="On-site" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">On-site</option>
-                                    <option value="Remote" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">Remote</option>
+                                    <option value="" className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white">
+                                        Select service mode
+                                    </option>
+                                    {SERVICE_MODES.map((item) => (
+                                        <option
+                                            key={item}
+                                            value={item}
+                                            className="bg-white text-zinc-900 dark:bg-[#111111] dark:text-white"
+                                        >
+                                            {item}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

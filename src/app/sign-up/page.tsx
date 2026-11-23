@@ -1,53 +1,112 @@
-
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { signUp, useSession } from "@/lib/auth-client";
+import { getDashboardPathByRole } from "@/lib/constants";
 
-import { signUp } from "@/lib/auth-client";
+type FieldErrors = {
+    name?: string;
+    email?: string;
+    password?: string;
+};
+
+function validatePassword(value: string): string[] {
+    const errors: string[] = [];
+
+    if (value.length < 6) {
+        errors.push("At least 6 characters");
+    }
+
+    if (!/[A-Z]/.test(value)) {
+        errors.push("At least one uppercase letter");
+    }
+
+    if (!/[a-z]/.test(value)) {
+        errors.push("At least one lowercase letter");
+    }
+
+    return errors;
+}
 
 export default function SignUpPage() {
     const router = useRouter();
+    const { data: session, isPending } = useSession();
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("customer");
+    const [role, setRole] = useState<"customer" | "technician">("customer");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (
-        e: React.FormEvent<HTMLFormElement>
-    ) => {
+    useEffect(() => {
+        if (isPending || !session?.user) return;
+
+        const existingRole = (session.user as { role?: string }).role;
+        router.replace(getDashboardPathByRole(existingRole));
+    }, [isPending, session, router]);
+
+    const passwordIssues = password ? validatePassword(password) : [];
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
+
+        const nextErrors: FieldErrors = {};
+
+        if (!name.trim()) {
+            nextErrors.name = "Full name is required.";
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim() || !emailPattern.test(email.trim())) {
+            nextErrors.email = "Please enter a valid email address.";
+        }
+
+        const pwErrors = validatePassword(password);
+        if (pwErrors.length > 0) {
+            nextErrors.password = `Password must contain: ${pwErrors.join(", ")}.`;
+        }
+
+        if (Object.keys(nextErrors).length > 0) {
+            setFieldErrors(nextErrors);
+            toast.error("Please fix the form validation errors.");
+            return;
+        }
+
+        setFieldErrors({});
         setLoading(true);
 
         try {
+            const safeRole = role === "technician" ? "technician" : "customer";
+
             const result = await signUp.email({
-                name,
-                email,
+                name: name.trim(),
+                email: email.trim(),
                 password,
-                ...{ role },
+                ...{ role: safeRole },
             });
 
             if (result.error) {
-                setError(
-                    result.error.message || "Registration failed"
-                );
+                const msg = result.error.message || "Registration failed.";
+                setError(msg);
+                toast.error(msg);
                 return;
             }
 
-            router.push("/");
+            toast.success("Account created successfully! Welcome to FixMate.");
+            router.push(getDashboardPathByRole(safeRole));
             router.refresh();
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Something went wrong"
-            );
+            const msg =
+                err instanceof Error ? err.message : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -61,7 +120,6 @@ export default function SignUpPage() {
 
     return (
         <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-100 px-4 py-16 text-zinc-900 dark:bg-black dark:text-white">
-
             {/* Background Grid */}
             <div
                 aria-hidden="true"
@@ -94,101 +152,22 @@ export default function SignUpPage() {
                 }}
             />
 
-            {/* Orange Glow - Top Left */}
+            {/* Glows */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -left-32 -top-32 h-[500px] w-[500px] rounded-full bg-orange-600/20 blur-[130px]"
             />
-
-            {/* Orange Glow - Right */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -right-40 top-1/3 h-[450px] w-[450px] rounded-full bg-orange-500/10 blur-[130px]"
             />
-
-            {/* Blue Glow - Bottom */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -bottom-40 left-1/4 h-[450px] w-[600px] rounded-full bg-blue-700/20 blur-[140px]"
             />
 
-            {/* Circuit Decoration - Left */}
-            <svg
-                aria-hidden="true"
-                className="pointer-events-none absolute left-0 top-16 hidden h-64 w-[380px] text-orange-500/40 md:block"
-                viewBox="0 0 380 260"
-                fill="none"
-            >
-                <path
-                    d="M0 35H90L130 75H230L270 35H380"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <path
-                    d="M0 100H55L100 145H180"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <path
-                    d="M0 185H120L160 225H290"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <circle cx="230" cy="75" r="5" fill="currentColor" />
-                <circle cx="180" cy="145" r="5" fill="currentColor" />
-                <circle cx="290" cy="225" r="5" fill="currentColor" />
-            </svg>
-
-            {/* Circuit Decoration - Right */}
-            <svg
-                aria-hidden="true"
-                className="pointer-events-none absolute right-0 top-20 hidden h-64 w-[380px] text-blue-400/40 md:block"
-                viewBox="0 0 380 260"
-                fill="none"
-            >
-                <path
-                    d="M380 35H290L250 75H150L110 35H0"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <path
-                    d="M380 100H325L280 145H200"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <path
-                    d="M380 185H260L220 225H90"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                />
-                <circle cx="150" cy="75" r="5" fill="currentColor" />
-                <circle cx="200" cy="145" r="5" fill="currentColor" />
-                <circle cx="90" cy="225" r="5" fill="currentColor" />
-            </svg>
-
-            {/* Wrench Watermark */}
-            <svg
-                aria-hidden="true"
-                className="pointer-events-none absolute -left-10 bottom-10 h-64 w-64 -rotate-12 text-orange-500/10"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-            >
-                <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-            </svg>
-
-            {/* Gear Watermark */}
-            <svg
-                aria-hidden="true"
-                className="pointer-events-none absolute -bottom-16 -right-10 h-80 w-80 text-blue-400/10"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-            >
-                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
-            </svg>
-
             {/* Main Content */}
             <div className="relative z-10 mx-auto w-full max-w-md">
-
                 {/* Brand */}
                 <div className="mb-8 text-center">
                     <Link
@@ -213,66 +192,95 @@ export default function SignUpPage() {
 
                 {/* Form Card */}
                 <div className="rounded-2xl border border-orange-500/30 bg-white/95 p-6 shadow-[0_0_50px_rgba(249,115,22,0.12)] backdrop-blur-xl dark:bg-zinc-950/95 sm:p-8">
-
-                    {/* Card Top Accent */}
                     <div className="mb-7 h-1 w-20 rounded-full bg-gradient-to-r from-orange-600 to-orange-300" />
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="space-y-5"
-                    >
+                    <form onSubmit={handleSubmit} noValidate className="space-y-5">
                         {/* Name */}
                         <div>
-                            <label className={labelClass}>
+                            <label htmlFor="signup-name" className={labelClass}>
                                 Full Name
                             </label>
 
                             <input
+                                id="signup-name"
                                 type="text"
                                 required
                                 value={name}
-                                onChange={(e) =>
-                                    setName(e.target.value)
-                                }
+                                onChange={(e) => {
+                                    setName(e.target.value);
+                                    if (fieldErrors.name) {
+                                        setFieldErrors((prev) => ({
+                                            ...prev,
+                                            name: undefined,
+                                        }));
+                                    }
+                                }}
                                 placeholder="Enter your full name"
                                 className={inputClass}
                             />
+
+                            {fieldErrors.name && (
+                                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {fieldErrors.name}
+                                </p>
+                            )}
                         </div>
 
                         {/* Email */}
                         <div>
-                            <label className={labelClass}>
+                            <label htmlFor="signup-email" className={labelClass}>
                                 Email Address
                             </label>
 
                             <input
+                                id="signup-email"
                                 type="email"
                                 required
                                 value={email}
-                                onChange={(e) =>
-                                    setEmail(e.target.value)
-                                }
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    if (fieldErrors.email) {
+                                        setFieldErrors((prev) => ({
+                                            ...prev,
+                                            email: undefined,
+                                        }));
+                                    }
+                                }}
                                 placeholder="Enter your email"
+                                autoComplete="email"
                                 className={inputClass}
                             />
+
+                            {fieldErrors.email && (
+                                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {fieldErrors.email}
+                                </p>
+                            )}
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className={labelClass}>
+                            <label htmlFor="signup-password" className={labelClass}>
                                 Password
                             </label>
 
                             <div className="relative">
                                 <input
+                                    id="signup-password"
                                     type={showPassword ? "text" : "password"}
                                     required
-                                    minLength={8}
                                     value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
-                                    placeholder="At least 8 characters"
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (fieldErrors.password) {
+                                            setFieldErrors((prev) => ({
+                                                ...prev,
+                                                password: undefined,
+                                            }));
+                                        }
+                                    }}
+                                    placeholder="Min 6 chars, uppercase & lowercase"
+                                    autoComplete="new-password"
                                     className={`${inputClass} pr-12`}
                                 />
 
@@ -288,68 +296,118 @@ export default function SignUpPage() {
                                     }
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-orange-500 dark:text-zinc-400"
                                 >
-                                    {showPassword ? (
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="M3 3l18 18" />
-                                            <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
-                                            <path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 9 4 10 7-.4 1.1-1.2 2.2-2.2 3.2" />
-                                            <path d="M6.2 6.2C3.8 7.5 2.4 9.6 2 12c1 3 5 7 10 7 1 0 2-.2 2.9-.5" />
-                                        </svg>
-                                    ) : (
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </svg>
-                                    )}
+                                    {showPassword ? "Hide" : "Show"}
                                 </button>
                             </div>
+
+                            {fieldErrors.password && (
+                                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">
+                                    {fieldErrors.password}
+                                </p>
+                            )}
+
+                            <ul className="mt-2 space-y-1 text-xs">
+                                <li
+                                    className={
+                                        password.length >= 6
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-zinc-500 dark:text-zinc-400"
+                                    }
+                                >
+                                    {password.length >= 6 ? "✓" : "•"} At least
+                                    6 characters
+                                </li>
+                                <li
+                                    className={
+                                        /[A-Z]/.test(password)
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-zinc-500 dark:text-zinc-400"
+                                    }
+                                >
+                                    {/[A-Z]/.test(password) ? "✓" : "•"} At
+                                    least one uppercase letter
+                                </li>
+                                <li
+                                    className={
+                                        /[a-z]/.test(password)
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-zinc-500 dark:text-zinc-400"
+                                    }
+                                >
+                                    {/[a-z]/.test(password) ? "✓" : "•"} At
+                                    least one lowercase letter
+                                </li>
+                            </ul>
                         </div>
 
-                        {/* Role */}
+                        {/* Role Selection Cards */}
                         <div>
-                            <label className={labelClass}>
-                                Register As
-                            </label>
+                            <span className={labelClass}>Register As</span>
 
-                            <select
-                                value={role}
-                                onChange={(e) =>
-                                    setRole(e.target.value)
-                                }
-                                className={inputClass}
-                            >
-                                <option value="customer">
-                                    Customer
-                                </option>
-                                <option value="technician">
-                                    Technician
-                                </option>
-                            </select>
+                            <div className="grid grid-cols-2 gap-3">
+                                {([
+                                    {
+                                        value: "customer",
+                                        title: "Customer",
+                                        subtitle: "Book repair services",
+                                    },
+                                    {
+                                        value: "technician",
+                                        title: "Technician",
+                                        subtitle: "Offer repair services",
+                                    },
+                                ] as const).map((option) => {
+                                    const selected = role === option.value;
+
+                                    return (
+                                        <label
+                                            key={option.value}
+                                            className={`cursor-pointer rounded-xl border p-3.5 transition ${
+                                                selected
+                                                    ? "border-orange-500 bg-orange-500/10"
+                                                    : "border-zinc-300 bg-white hover:border-orange-500/40 dark:border-zinc-800 dark:bg-black/60"
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={option.value}
+                                                checked={selected}
+                                                onChange={() =>
+                                                    setRole(option.value)
+                                                }
+                                                className="sr-only"
+                                            />
+
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                                                    {option.title}
+                                                </span>
+
+                                                <span
+                                                    className={`h-4 w-4 rounded-full border-2 ${
+                                                        selected
+                                                            ? "border-orange-500 bg-orange-500"
+                                                            : "border-zinc-400 dark:border-zinc-600"
+                                                    }`}
+                                                />
+                                            </div>
+
+                                            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                                {option.subtitle}
+                                            </p>
+                                        </label>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         {/* Error */}
                         {error && (
-                            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400">
+                            <div
+                                role="alert"
+                                className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-400"
+                            >
                                 {error}
                             </div>
                         )}
@@ -357,12 +415,13 @@ export default function SignUpPage() {
                         {/* Submit */}
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={
+                                loading ||
+                                (Boolean(password) && passwordIssues.length > 0)
+                            }
                             className="w-full rounded-lg border border-orange-400/30 bg-gradient-to-r from-orange-600 to-orange-500 py-3 font-bold text-white shadow-[0_0_20px_rgba(249,115,22,0.2)] transition duration-300 hover:from-orange-500 hover:to-orange-400 hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            {loading
-                                ? "Creating Account..."
-                                : "Create Account"}
+                            {loading ? "Creating Account..." : "Create Account"}
                         </button>
                     </form>
 

@@ -9,27 +9,35 @@ Customers can explore repair services, book technicians, track booking status, a
 - **Frontend:** https://fixmate-gules-three.vercel.app
 - **Backend API:** https://fixmate-server-navy.vercel.app
 
+## Admin & Test Credentials
+
+> Replace the placeholders below with your live seeded accounts before final submission.
+
+- **Admin Email:** `<your-admin-email>`
+- **Admin Password:** `<your-admin-password>`
+- **Technician Account:** `<technician-email>` / `<technician-password>`
+- **Customer Account:** `<customer-email>` / `<customer-password>`
+
 ## GitHub Repositories
 
 - **Frontend:** https://github.com/swagatamondalahona/fixmate
 - **Backend:** https://github.com/swagatamondalahona/fixmate-server
 
-## Technologies Used
+## Technologies & npm Packages Used
 
-### Frontend
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
+### Frontend (`fixmate`)
+- `next` (`16.4.6`) — React App Router framework
+- `react` & `react-dom` (`19.3.0`) — UI library
+- `better-auth` (`^1.7.26`) & `@better-auth/mongo-adapter` (`^1.7.26`) — Authentication, sessions & JWT
+- `mongodb` (`^7.9.0`) — Database driver for BetterAuth adapter
+- `sonner` — Toast notifications across auth, CRUD, bookings & payments
+- `tailwindcss` (`4.3.3`) & `@tailwindcss/turbopack` — Responsive styling with dark/light theme support
+- `typescript` (`^5`) & `eslint` (`^9`) — Type safety and linting
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Better Auth
-- JWT Authentication
-- Stripe Payment Integration
-- ImgBB
+### Backend (`fixmate-server`)
+- `express` (`^5.3.0`) — REST API server & role-based middlewares
+- `mongodb` (`^7.9.0`) — Database operations (4 collections: `users`, `services`, `bookings`, `payments`)
+- `stripe` (`^23.2.0`) — Stripe Checkout (USD test mode) & webhook integration
 
 ## Main Features
 

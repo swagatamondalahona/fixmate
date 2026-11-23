@@ -2,7 +2,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { authClient, useSession } from "@/lib/auth-client";
 
 interface User {
     _id: string;
@@ -17,6 +18,10 @@ interface User {
 }
 
 export default function AdminUsersPage() {
+    const { data: session } = useSession();
+    const currentUser = session?.user as
+        | { id?: string; email?: string }
+        | undefined;
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState("");
@@ -86,7 +91,7 @@ export default function AdminUsersPage() {
     // Update user role
     const updateUserRole = async (
         userId: string,
-        role: "customer" | "technician"
+        role: "customer" | "technician" | "admin"
     ) => {
         try {
             setProcessingId(userId);
@@ -121,19 +126,23 @@ export default function AdminUsersPage() {
 
             setUsers((previous) =>
                 previous.map((user) =>
-                    user._id === userId
+                    (user._id || user.id) === userId
                         ? { ...user, role }
                         : user
                 )
             );
 
-            setMessage(result.message || "User role updated successfully.");
+            const successMsg =
+                result.message || "User role updated successfully.";
+            setMessage(successMsg);
+            toast.success(successMsg);
         } catch (err) {
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Something went wrong."
-            );
+                    : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setProcessingId("");
         }
@@ -261,7 +270,7 @@ export default function AdminUsersPage() {
                                     <tr>
                                         <th className="px-6 py-4">User</th>
                                         <th className="px-6 py-4">Email</th>
-                                        <th className="px-6 py-4">Phone</th>
+                                        <th className="px-6 py-4">Joined</th>
                                         <th className="px-6 py-4">Role</th>
                                         <th className="px-6 py-4">Action</th>
                                     </tr>
@@ -271,6 +280,14 @@ export default function AdminUsersPage() {
                                     {users.map((user) => {
                                         const userId = user._id || user.id || "";
                                         const isAdmin = user.role === "admin";
+                                        const isSelf =
+                                            (Boolean(currentUser?.id) &&
+                                                (userId === currentUser?.id ||
+                                                    user.id ===
+                                                        currentUser?.id)) ||
+                                            (Boolean(currentUser?.email) &&
+                                                user.email?.toLowerCase() ===
+                                                    currentUser?.email?.toLowerCase());
 
                                         return (
                                             <tr
@@ -296,9 +313,9 @@ export default function AdminUsersPage() {
                                                                 {user.name}
                                                             </p>
 
-                                                            {isAdmin && (
+                                                            {isSelf && (
                                                                 <span className="text-xs text-orange-600 dark:text-orange-400">
-                                                                    Administrator
+                                                                    You
                                                                 </span>
                                                             )}
                                                         </div>
@@ -310,12 +327,23 @@ export default function AdminUsersPage() {
                                                 </td>
 
                                                 <td className="px-6 py-5 text-zinc-600 dark:text-zinc-400">
-                                                    {user.phone || "—"}
+                                                    {user.createdAt
+                                                        ? new Date(
+                                                              user.createdAt
+                                                          ).toLocaleDateString(
+                                                              "en-US",
+                                                              {
+                                                                  year: "numeric",
+                                                                  month: "short",
+                                                                  day: "numeric",
+                                                              }
+                                                          )
+                                                        : "—"}
                                                 </td>
 
                                                 <td className="px-6 py-5">
                                                     <span
-                                                        className={`rounded-full px-3 py-1 text-xs font-semibold ${isAdmin
+                                                        className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${isAdmin
                                                                 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
                                                                 : user.role === "technician"
                                                                     ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
@@ -327,9 +355,9 @@ export default function AdminUsersPage() {
                                                 </td>
 
                                                 <td className="px-6 py-5">
-                                                    {isAdmin ? (
+                                                    {isSelf ? (
                                                         <span className="text-xs text-zinc-500">
-                                                            Protected
+                                                            Protected (Own Role)
                                                         </span>
                                                     ) : (
                                                         <select
@@ -341,6 +369,7 @@ export default function AdminUsersPage() {
                                                                     event.target.value as
                                                                     | "customer"
                                                                     | "technician"
+                                                                    | "admin"
                                                                 )
                                                             }
                                                             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-900 outline-none focus:border-orange-500 disabled:opacity-50 dark:border-white/10 dark:bg-black dark:text-white"
@@ -351,6 +380,10 @@ export default function AdminUsersPage() {
 
                                                             <option value="technician">
                                                                 Technician
+                                                            </option>
+
+                                                            <option value="admin">
+                                                                Admin
                                                             </option>
                                                         </select>
                                                     )}

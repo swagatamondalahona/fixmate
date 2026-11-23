@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { authClient, useSession } from "@/lib/auth-client";
 
 type UserInfo = {
@@ -48,15 +49,34 @@ export default function DashboardLayout({
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [signingOut, setSigningOut] = useState(false);
+    const [theme, setTheme] = useState<"dark" | "light">("dark");
 
     const user = session?.user as UserInfo | undefined;
     const role = user?.role?.toLowerCase() || "";
 
     useEffect(() => {
+        const savedTheme = localStorage.getItem("fixmate-theme");
+        const initialTheme =
+            savedTheme === "light" || savedTheme === "dark"
+                ? savedTheme
+                : "dark";
+
+        setTheme(initialTheme);
+        document.documentElement.setAttribute("data-theme", initialTheme);
+    }, []);
+
+    const toggleTheme = () => {
+        const nextTheme = theme === "dark" ? "light" : "dark";
+        setTheme(nextTheme);
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        localStorage.setItem("fixmate-theme", nextTheme);
+    };
+
+    useEffect(() => {
         if (isPending) return;
 
         if (!session) {
-            router.replace("/sign-in");
+            router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
             return;
         }
 
@@ -86,10 +106,12 @@ export default function DashboardLayout({
         try {
             setSigningOut(true);
             await authClient.signOut();
+            toast.success("Signed out successfully.");
             router.replace("/sign-in");
             router.refresh();
         } catch (error) {
             console.error("Sign out failed:", error);
+            toast.error("Unable to sign out. Please try again.");
             setSigningOut(false);
         }
     };
@@ -226,6 +248,22 @@ export default function DashboardLayout({
                             </Link>
                         );
                     })}
+                    {/* Update Profile Link */}
+                    <Link
+                        href="/dashboard/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                            pathname === "/dashboard/profile"
+                                ? "border border-orange-500/20 bg-orange-500/10 text-orange-500 dark:text-orange-400"
+                                : "text-zinc-600 hover:bg-zinc-100 hover:text-orange-500 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                        }`}
+                    >
+                        <span className="w-6 text-center text-lg">✎</span>
+                        Update Profile
+                        {pathname === "/dashboard/profile" && (
+                            <span className="ml-auto h-2 w-2 rounded-full bg-orange-500" />
+                        )}
+                    </Link>
                 </nav>
 
                 {/* Sidebar Footer */}
@@ -267,6 +305,20 @@ export default function DashboardLayout({
                     </div>
 
                     <div className="flex items-center gap-3 sm:gap-5">
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            aria-label="Toggle color theme"
+                            title={
+                                theme === "dark"
+                                    ? "Switch to Light Mode"
+                                    : "Switch to Dark Mode"
+                            }
+                            className="rounded-lg border border-zinc-300 px-2.5 py-2 text-base text-zinc-800 transition-colors hover:border-orange-500 hover:text-orange-500 dark:border-white/15 dark:text-white"
+                        >
+                            {theme === "dark" ? "☀️" : "🌙"}
+                        </button>
+
                         <Link
                             href="/dashboard/profile"
                             className="flex items-center gap-3"

@@ -2,8 +2,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { formatUSD } from "@/lib/currency";
+import { formatServiceMode } from "@/lib/constants";
+import DashboardChart from "@/components/shared/DashboardChart";
 
 interface Service {
     _id: string;
@@ -14,16 +17,35 @@ interface Service {
     basePrice: number;
     image?: string;
     technicianEmail?: string;
+    approvalStatus?: "pending" | "approved" | "rejected";
     createdAt?: string;
+}
+
+interface AdminUser {
+    _id: string;
+    role: string;
+}
+
+interface AdminBooking {
+    _id: string;
+    status: string;
+}
+
+interface AdminTransaction {
+    _id: string;
+    amount?: number;
 }
 
 export default function AdminDashboard() {
     const [services, setServices] = useState<Service[]>([]);
+    const [allServices, setAllServices] = useState<Service[]>([]);
+    const [users, setUsers] = useState<AdminUser[]>([]);
+    const [bookings, setBookings] = useState<AdminBooking[]>([]);
+    const [transactions, setTransactions] = useState<AdminTransaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
-    const [apiStatus, setApiStatus] = useState("Checking...");
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -44,7 +66,7 @@ export default function AdminDashboard() {
         return data.token;
     };
 
-    // Fetch Pending Services
+    // Fetch Dashboard Overview Data
     const fetchPendingServices = useCallback(async () => {
         try {
             setLoading(true);
@@ -56,29 +78,66 @@ export default function AdminDashboard() {
             }
 
             const token = await getAuthToken();
+            const headers = { Authorization: `Bearer ${token}` };
 
-            const response = await fetch(
-                `${API_URL}/api/admin/services/pending`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const [
+                pendingRes,
+                allServicesRes,
+                usersRes,
+                bookingsRes,
+                transactionsRes,
+            ] = await Promise.all([
+                fetch(`${API_URL}/api/admin/services/pending`, { headers }),
+                fetch(`${API_URL}/api/admin/services`, { headers }),
+                fetch(`${API_URL}/api/admin/users`, { headers }),
+                fetch(`${API_URL}/api/admin/bookings`, { headers }),
+                fetch(`${API_URL}/api/admin/transactions`, { headers }),
+            ]);
 
-            const result = await response.json();
+            const [
+                pendingResult,
+                allServicesResult,
+                usersResult,
+                bookingsResult,
+                transactionsResult,
+            ] = await Promise.all([
+                pendingRes.json(),
+                allServicesRes.json(),
+                usersRes.json(),
+                bookingsRes.json(),
+                transactionsRes.json(),
+            ]);
 
-            if (!response.ok) {
+            if (!pendingRes.ok) {
                 throw new Error(
-                    result.message || "Failed to load pending services."
+                    pendingResult.message || "Failed to load pending services."
                 );
             }
 
-            setServices(Array.isArray(result.data) ? result.data : []);
-            setApiStatus("Connected");
+            setServices(
+                Array.isArray(pendingResult.data) ? pendingResult.data : []
+            );
+            setAllServices(
+                allServicesRes.ok && Array.isArray(allServicesResult.data)
+                    ? allServicesResult.data
+                    : []
+            );
+            setUsers(
+                usersRes.ok && Array.isArray(usersResult.data)
+                    ? usersResult.data
+                    : []
+            );
+            setBookings(
+                bookingsRes.ok && Array.isArray(bookingsResult.data)
+                    ? bookingsResult.data
+                    : []
+            );
+            setTransactions(
+                transactionsRes.ok && Array.isArray(transactionsResult.data)
+                    ? transactionsResult.data
+                    : []
+            );
         } catch (err) {
-            setApiStatus("Connection Failed");
             setServices([]);
 
             setError(
@@ -132,21 +191,64 @@ export default function AdminDashboard() {
             setServices((previous) =>
                 previous.filter((service) => service._id !== serviceId)
             );
-
-            setMessage(
-                result.message ||
-                `Service ${action === "approve" ? "approved" : "rejected"} successfully.`
+            setAllServices((previous) =>
+                previous.map((service) =>
+                    service._id === serviceId
+                        ? {
+                              ...service,
+                              approvalStatus:
+                                  action === "approve"
+                                      ? "approved"
+                                      : "rejected",
+                          }
+                        : service
+                )
             );
+
+            const successMsg =
+                result.message ||
+                `Service ${action === "approve" ? "approved" : "rejected"} successfully.`;
+            setMessage(successMsg);
+            toast.success(successMsg);
         } catch (err) {
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Something went wrong."
-            );
+                    : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setProcessingId("");
         }
     };
+
+    const totalTechnicians = users.filter((u) => u.role === "technician").length;
+    const totalCustomers = users.filter((u) => u.role === "customer").length;
+    const totalAdmins = users.filter((u) => u.role === "admin").length;
+    const totalRevenue = transactions.reduce(
+        (sum, tx) => sum + Number(tx.amount || 0),
+        0
+    );
+
+    const approvedServicesCount = allServices.filter(
+        (s) => s.approvalStatus === "approved"
+    ).length;
+    const rejectedServicesCount = allServices.filter(
+        (s) => s.approvalStatus === "rejected"
+    ).length;
+
+    const requestedBookings = bookings.filter(
+        (b) => b.status === "requested"
+    ).length;
+    const activeBookings = bookings.filter(
+        (b) => b.status === "accepted" || b.status === "in-progress"
+    ).length;
+    const completedBookings = bookings.filter(
+        (b) => b.status === "completed"
+    ).length;
+    const closedBookings = bookings.filter(
+        (b) => b.status === "rejected" || b.status === "cancelled"
+    ).length;
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-zinc-100 px-5 py-16 text-zinc-900 transition-colors duration-300 dark:bg-black dark:text-white sm:px-8 lg:px-12">
@@ -185,8 +287,28 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Statistics */}
-                <div className="mb-10 grid gap-5 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-7 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                            Total Users
+                        </p>
+
+                        <h2 className="mt-3 text-4xl font-bold text-zinc-900 dark:text-white">
+                            {users.length}
+                        </h2>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                            Total Technicians
+                        </p>
+
+                        <h2 className="mt-3 text-4xl font-bold text-blue-600 dark:text-blue-400">
+                            {totalTechnicians}
+                        </h2>
+                    </div>
+
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
                         <p className="text-sm text-zinc-600 dark:text-zinc-400">
                             Pending Services
                         </p>
@@ -196,22 +318,69 @@ export default function AdminDashboard() {
                         </h2>
                     </div>
 
-                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-7 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
+                    <div className="rounded-2xl border border-zinc-200 bg-white/90 p-6 shadow-xl transition-colors duration-300 dark:border-white/10 dark:bg-zinc-950/80">
                         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                            Dashboard Status
+                            Total Revenue
                         </p>
 
-                        <h2
-                            className={`mt-3 text-2xl font-bold ${apiStatus === "Connected"
-                                    ? "text-green-600 dark:text-green-500"
-                                    : apiStatus === "Checking..."
-                                        ? "text-yellow-600 dark:text-yellow-400"
-                                        : "text-red-600 dark:text-red-400"
-                                }`}
-                        >
-                            {apiStatus}
+                        <h2 className="mt-3 text-3xl font-bold text-green-600 dark:text-green-400">
+                            {formatUSD(totalRevenue, { decimals: true })}
                         </h2>
                     </div>
+                </div>
+
+                {/* Analytics Charts */}
+                <div className="mb-10 grid gap-6 lg:grid-cols-2">
+                    <DashboardChart
+                        title="Platform Users & Services"
+                        subtitle="Breakdown of registered accounts and service moderation"
+                        totalLabel="Users"
+                        data={[
+                            {
+                                label: "Customers",
+                                value: totalCustomers,
+                                color: "#22c55e",
+                            },
+                            {
+                                label: "Technicians",
+                                value: totalTechnicians,
+                                color: "#3b82f6",
+                            },
+                            {
+                                label: "Admins",
+                                value: totalAdmins,
+                                color: "#f97316",
+                            },
+                        ]}
+                    />
+
+                    <DashboardChart
+                        title="Jobs & Services Overview"
+                        subtitle={`${approvedServicesCount} approved • ${services.length} pending • ${rejectedServicesCount} rejected services`}
+                        totalLabel="Bookings"
+                        data={[
+                            {
+                                label: "Requested",
+                                value: requestedBookings,
+                                color: "#3b82f6",
+                            },
+                            {
+                                label: "Accepted / In Progress",
+                                value: activeBookings,
+                                color: "#f59e0b",
+                            },
+                            {
+                                label: "Completed",
+                                value: completedBookings,
+                                color: "#22c55e",
+                            },
+                            {
+                                label: "Rejected / Cancelled",
+                                value: closedBookings,
+                                color: "#71717a",
+                            },
+                        ]}
+                    />
                 </div>
 
                 {/* Error Message */}
@@ -338,7 +507,7 @@ export default function AdminDashboard() {
                                             <span className="font-semibold text-zinc-900 dark:text-white">
                                                 Mode:
                                             </span>{" "}
-                                            {service.serviceMode}
+                                            {formatServiceMode(service.serviceMode)}
                                         </p>
 
                                         {service.technicianEmail && (

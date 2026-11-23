@@ -2,8 +2,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { formatUSD } from "@/lib/currency";
+import { formatServiceMode } from "@/lib/constants";
 
 interface Service {
     _id: string;
@@ -125,21 +127,37 @@ export default function AdminServicesPage() {
                 )
             );
 
-            setMessage(result.message || `Service ${action}d successfully.`);
+            const successMsg =
+                result.message || `Service ${action}d successfully.`;
+            setMessage(successMsg);
+            toast.success(successMsg);
         } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Something went wrong."
-            );
+            const msg =
+                err instanceof Error ? err.message : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setProcessingId("");
         }
     };
 
     const filteredServices = useMemo(() => {
-        if (filter === "all") return services;
+        const list =
+            filter === "all"
+                ? services
+                : services.filter(
+                      (service) => service.approvalStatus === filter
+                  );
 
-        return services.filter(
-            (service) => service.approvalStatus === filter
+        // Always prioritize pending services at the top for quick moderation
+        const priority: Record<Service["approvalStatus"], number> = {
+            pending: 0,
+            approved: 1,
+            rejected: 2,
+        };
+
+        return [...list].sort(
+            (a, b) => priority[a.approvalStatus] - priority[b.approvalStatus]
         );
     }, [services, filter]);
 
@@ -321,7 +339,7 @@ export default function AdminServicesPage() {
                                             <span className="text-zinc-900 dark:text-white">
                                                 Mode:
                                             </span>{" "}
-                                            {service.serviceMode}
+                                            {formatServiceMode(service.serviceMode)}
                                         </p>
 
                                         <p>

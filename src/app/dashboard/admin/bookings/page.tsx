@@ -2,12 +2,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import {
     formatUSD,
     MIN_SERVICE_PRICE_USD,
     MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
+import { getBookingStatusStyle } from "@/lib/constants";
 
 interface Booking {
     _id: string;
@@ -168,11 +170,15 @@ export default function AdminBookingsPage() {
                 delete next[bookingId];
                 return next;
             });
-            setMessage(result.message || "Final amount updated successfully.");
+            const successMsg =
+                result.message || "Final amount updated successfully.";
+            setMessage(successMsg);
+            toast.success(successMsg);
         } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Something went wrong."
-            );
+            const msg =
+                err instanceof Error ? err.message : "Something went wrong.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setUpdatingId("");
         }
@@ -196,26 +202,7 @@ export default function AdminBookingsPage() {
         cancelled: bookings.filter((b) => b.status === "cancelled").length,
     };
 
-    const getStatusStyle = (status: string) => {
-        switch (status) {
-            case "completed":
-                return "bg-green-500/10 text-green-700 dark:text-green-400";
-
-            case "accepted":
-            case "in-progress":
-                return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
-
-            case "rejected":
-            case "cancelled":
-                return "bg-red-500/10 text-red-600 dark:text-red-400";
-
-            case "requested":
-                return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
-
-            default:
-                return "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400";
-        }
-    };
+    const getStatusStyle = (status: string) => getBookingStatusStyle(status);
 
     const formatDate = (date: string) => {
         if (!date) return "Not available";

@@ -1,13 +1,16 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import {
     formatUSD,
     MIN_SERVICE_PRICE_USD,
     MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
+import { getBookingStatusStyle } from "@/lib/constants";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
@@ -19,6 +22,8 @@ type BookingStatus =
     | "completed"
     | "cancelled";
 
+type StatusFilter = "all" | BookingStatus;
+
 type Booking = {
     _id: string;
     serviceTitle: string;
@@ -26,10 +31,13 @@ type Booking = {
     customerId: string;
     customerEmail: string;
     customerName?: string;
+    customerPhone?: string;
     technicianId: string;
     bookingDate: string;
+    preferredDate?: string;
     address: string;
     notes?: string;
+    problemDescription?: string;
     basePrice: number;
     finalAmount: number | null;
     status: BookingStatus;
@@ -39,12 +47,16 @@ type Booking = {
 
 export default function TechnicianRequestsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [updatingId, setUpdatingId] = useState("");
     const [finalAmounts, setFinalAmounts] = useState<
         Record<string, string>
     >({});
+    const [rejectTarget, setRejectTarget] = useState<Booking | null>(null);
+    const [completeTarget, setCompleteTarget] = useState<Booking | null>(null);
+    const [completeAmount, setCompleteAmount] = useState("");
 
     const fetchRequests = useCallback(async () => {
         try {
@@ -101,7 +113,8 @@ export default function TechnicianRequestsPage() {
 
     const updateBookingStatus = async (
         bookingId: string,
-        status: BookingStatus
+        status: BookingStatus,
+        overrideFinalAmount?: number
     ) => {
         try {
             if (!API_URL) {
@@ -111,13 +124,14 @@ export default function TechnicianRequestsPage() {
             let finalAmount: number | undefined;
 
             if (status === "completed") {
-                finalAmount = Number(finalAmounts[bookingId]);
+                finalAmount =
+                    overrideFinalAmount ?? Number(finalAmounts[bookingId]);
 
                 if (
                     !Number.isFinite(finalAmount) ||
                     finalAmount < MIN_SERVICE_PRICE_USD
                 ) {
-                    alert(
+                    toast.error(
                         `Please enter a valid final amount of at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (Stripe minimum online payment requirement).`
                     );
                     return;
@@ -158,11 +172,17 @@ export default function TechnicianRequestsPage() {
                 );
             }
 
-            alert(result.message || "Booking status updated successfully.");
+            setRejectTarget(null);
+            setCompleteTarget(null);
+            setCompleteAmount("");
+
+            toast.success(
+                result.message || "Booking status updated successfully."
+            );
 
             await fetchRequests();
         } catch (err) {
-            alert(
+            toast.error(
                 err instanceof Error
                     ? err.message
                     : "Something went wrong."
@@ -184,7 +204,7 @@ export default function TechnicianRequestsPage() {
                 !Number.isFinite(finalAmount) ||
                 finalAmount < MIN_SERVICE_PRICE_USD
             ) {
-                alert(
+                toast.error(
                     `Please enter a valid final amount of at least ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })} USD (Stripe minimum online payment requirement).`
                 );
                 return;
@@ -224,7 +244,9 @@ export default function TechnicianRequestsPage() {
                 );
             }
 
-            alert(result.message || "Final amount updated successfully.");
+            toast.success(
+                result.message || "Final amount updated successfully."
+            );
 
             setFinalAmounts((previous) => {
                 const next = { ...previous };
@@ -234,7 +256,7 @@ export default function TechnicianRequestsPage() {
 
             await fetchRequests();
         } catch (err) {
-            alert(
+            toast.error(
                 err instanceof Error
                     ? err.message
                     : "Something went wrong."
@@ -244,25 +266,13 @@ export default function TechnicianRequestsPage() {
         }
     };
 
-    const getStatusStyle = (status: BookingStatus) => {
-        switch (status) {
-            case "accepted":
-                return "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400";
+    const filteredBookings = useMemo(() => {
+        if (statusFilter === "all") return bookings;
+        return bookings.filter((booking) => booking.status === statusFilter);
+    }, [bookings, statusFilter]);
 
-            case "in-progress":
-                return "border-orange-500/20 bg-orange-500/10 text-orange-700 dark:text-orange-400";
-
-            case "completed":
-                return "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400";
-
-            case "rejected":
-            case "cancelled":
-                return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400";
-
-            default:
-                return "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
-        }
-    };
+    const getStatusStyle = (status: BookingStatus) =>
+        getBookingStatusStyle(status);
 
     const stats = [
         {
@@ -368,6 +378,40 @@ export default function TechnicianRequestsPage() {
                     ))}
                 </div>
 
+                {/* Status Filter */}
+                <div className="mb-8 flex flex-wrap gap-2">
+                    {([
+                        ["All", "all"],
+                        ["Requested", "requested"],
+                        ["Accepted", "accepted"],
+                        ["In Progress", "in-progress"],
+                        ["Completed", "completed"],
+                        ["Rejected", "rejected"],
+                        ["Cancelled", "cancelled"],
+                    ] as const).map(([label, value]) => {
+                        const count =
+                            value === "all"
+                                ? bookings.length
+                                : bookings.filter((b) => b.status === value)
+                                      .length;
+
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setStatusFilter(value)}
+                                className={`rounded-xl border px-4 py-2 text-xs font-semibold transition sm:text-sm ${
+                                    statusFilter === value
+                                        ? "border-orange-500 bg-orange-500 text-white"
+                                        : "border-zinc-200 bg-white text-zinc-700 hover:border-orange-500/50 dark:border-white/10 dark:bg-[#111111] dark:text-zinc-300"
+                                }`}
+                            >
+                                {label} ({count})
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {/* Loading */}
                 {loading && (
                     <div className="rounded-2xl border border-zinc-200 bg-white p-12 text-center dark:border-white/10 dark:bg-[#111111]/95">
@@ -396,7 +440,7 @@ export default function TechnicianRequestsPage() {
                 )}
 
                 {/* Empty State */}
-                {!loading && !error && bookings.length === 0 && (
+                {!loading && !error && filteredBookings.length === 0 && (
                     <div className="rounded-2xl border border-zinc-200 bg-white px-6 py-16 text-center dark:border-white/10 dark:bg-[#111111]/95">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10 text-3xl text-orange-600 dark:text-orange-500">
                             ▤
@@ -407,15 +451,17 @@ export default function TechnicianRequestsPage() {
                         </h2>
 
                         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-600 dark:text-gray-400">
-                            You do not have any customer booking requests yet.
+                            {statusFilter === "all"
+                                ? "You do not have any customer booking requests yet."
+                                : `No requests found with status "${statusFilter.replace("-", " ")}".`}
                         </p>
                     </div>
                 )}
 
                 {/* Booking Cards */}
-                {!loading && !error && bookings.length > 0 && (
+                {!loading && !error && filteredBookings.length > 0 && (
                     <div className="grid gap-6 lg:grid-cols-2">
-                        {bookings.map((booking) => (
+                        {filteredBookings.map((booking) => (
                             <div
                                 key={booking._id}
                                 className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-black/5 transition hover:border-orange-500/30 dark:border-white/10 dark:bg-[#111111]/95 dark:shadow-black/20"
@@ -503,12 +549,25 @@ export default function TechnicianRequestsPage() {
 
                                             <div className="flex flex-col justify-between gap-1 sm:flex-row">
                                                 <span className="text-zinc-500 dark:text-gray-500">
-                                                    Booking Date
+                                                    Customer Phone
                                                 </span>
 
                                                 <span className="text-zinc-800 dark:text-gray-200">
-                                                    {booking.bookingDate
-                                                        ? new Date(booking.bookingDate).toLocaleDateString()
+                                                    {booking.customerPhone || "Not provided"}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex flex-col justify-between gap-1 sm:flex-row">
+                                                <span className="text-zinc-500 dark:text-gray-500">
+                                                    Preferred Date
+                                                </span>
+
+                                                <span className="text-zinc-800 dark:text-gray-200">
+                                                    {booking.preferredDate || booking.bookingDate
+                                                        ? new Date(
+                                                              booking.preferredDate ||
+                                                                  booking.bookingDate
+                                                          ).toLocaleDateString()
                                                         : "Not available"}
                                                 </span>
                                             </div>
@@ -532,7 +591,9 @@ export default function TechnicianRequestsPage() {
                                         </p>
 
                                         <p className="mt-2 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-6 text-zinc-700 dark:border-white/10 dark:bg-[#080808]/70 dark:text-gray-300">
-                                            {booking.notes || "No additional description provided."}
+                                            {booking.problemDescription ||
+                                                booking.notes ||
+                                                "No additional description provided."}
                                         </p>
                                     </div>
 
@@ -584,18 +645,9 @@ export default function TechnicianRequestsPage() {
                                                 </button>
 
                                                 <button
-                                                    onClick={() => {
-                                                        if (
-                                                            window.confirm(
-                                                                "Are you sure you want to reject this booking?"
-                                                            )
-                                                        ) {
-                                                            updateBookingStatus(
-                                                                booking._id,
-                                                                "rejected"
-                                                            );
-                                                        }
-                                                    }}
+                                                    onClick={() =>
+                                                        setRejectTarget(booking)
+                                                    }
                                                     disabled={updatingId === booking._id}
                                                     className="flex-1 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-500/20 disabled:opacity-50 dark:text-red-400"
                                                 >
@@ -622,45 +674,24 @@ export default function TechnicianRequestsPage() {
                                         )}
 
                                         {booking.status === "in-progress" && (
-                                            <div className="space-y-3">
-                                                <label
-                                                    htmlFor={`amount-${booking._id}`}
-                                                    className="block text-sm font-medium text-zinc-700 dark:text-gray-300"
-                                                >
-                                                    Final Amount ($ USD — min {formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})
-                                                </label>
-
-                                                <input
-                                                    id={`amount-${booking._id}`}
-                                                    type="number"
-                                                    min={MIN_SERVICE_PRICE_USD}
-                                                    step="0.01"
-                                                    value={finalAmounts[booking._id] || ""}
-                                                    onChange={(event) =>
-                                                        setFinalAmounts((previous) => ({
-                                                            ...previous,
-                                                            [booking._id]: event.target.value,
-                                                        }))
-                                                    }
-                                                    placeholder={`Enter final amount (minimum ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })})`}
-                                                    className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white dark:placeholder:text-gray-600"
-                                                />
-
-                                                <button
-                                                    onClick={() =>
-                                                        updateBookingStatus(
-                                                            booking._id,
-                                                            "completed"
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setCompleteTarget(booking);
+                                                    setCompleteAmount(
+                                                        String(
+                                                            booking.basePrice ??
+                                                                ""
                                                         )
-                                                    }
-                                                    disabled={updatingId === booking._id}
-                                                    className="w-full rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
-                                                >
-                                                    {updatingId === booking._id
-                                                        ? "Updating..."
-                                                        : "✓ Mark as Completed"}
-                                                </button>
-                                            </div>
+                                                    );
+                                                }}
+                                                disabled={updatingId === booking._id}
+                                                className="w-full rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                                            >
+                                                {updatingId === booking._id
+                                                    ? "Updating..."
+                                                    : "✓ Mark as Completed"}
+                                            </button>
                                         )}
 
                                         {booking.status === "completed" && (
@@ -760,7 +791,7 @@ export default function TechnicianRequestsPage() {
                                         )}
 
                                         {booking.status === "cancelled" && (
-                                            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-center text-sm text-red-600 dark:text-red-400">
+                                            <p className="rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-center text-sm text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
                                                 This booking was cancelled by the customer.
                                             </p>
                                         )}
@@ -771,6 +802,108 @@ export default function TechnicianRequestsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Reject Confirmation Modal */}
+            <ConfirmModal
+                open={Boolean(rejectTarget)}
+                title="Reject Repair Request?"
+                description={
+                    rejectTarget
+                        ? `Are you sure you want to reject "${rejectTarget.serviceTitle}"? This action cannot be undone.`
+                        : ""
+                }
+                confirmLabel="Yes, Reject Request"
+                cancelLabel="Keep Request"
+                loading={Boolean(updatingId)}
+                onConfirm={() => {
+                    if (rejectTarget) {
+                        updateBookingStatus(rejectTarget._id, "rejected");
+                    }
+                }}
+                onCancel={() => setRejectTarget(null)}
+            />
+
+            {/* Mark Completed Modal (Pre-filled with Base Price) */}
+            {completeTarget && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm dark:bg-black/80"
+                >
+                    <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-[#111111]">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+                            Complete Repair Job
+                        </h2>
+
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            Enter the final amount for{" "}
+                            <span className="font-semibold text-zinc-900 dark:text-white">
+                                {completeTarget.serviceTitle}
+                            </span>{" "}
+                            (Base price: {formatUSD(completeTarget.basePrice)}).
+                            Once completed, the customer can pay online via
+                            Stripe.
+                        </p>
+
+                        <div className="mt-5">
+                            <label
+                                htmlFor="modal-final-amount"
+                                className="mb-2 block text-sm font-medium text-zinc-700 dark:text-gray-300"
+                            >
+                                Final Amount ($ USD — min{" "}
+                                {formatUSD(MIN_SERVICE_PRICE_USD, {
+                                    decimals: true,
+                                })}
+                                )
+                            </label>
+
+                            <input
+                                id="modal-final-amount"
+                                type="number"
+                                min={MIN_SERVICE_PRICE_USD}
+                                step="0.01"
+                                value={completeAmount}
+                                onChange={(event) =>
+                                    setCompleteAmount(event.target.value)
+                                }
+                                placeholder={`Min ${formatUSD(MIN_SERVICE_PRICE_USD, { decimals: true })}`}
+                                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-orange-500 dark:border-white/10 dark:bg-[#080808] dark:text-white"
+                            />
+                        </div>
+
+                        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setCompleteTarget(null);
+                                    setCompleteAmount("");
+                                }}
+                                disabled={updatingId === completeTarget._id}
+                                className="rounded-xl border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    updateBookingStatus(
+                                        completeTarget._id,
+                                        "completed",
+                                        Number(completeAmount)
+                                    )
+                                }
+                                disabled={updatingId === completeTarget._id}
+                                className="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {updatingId === completeTarget._id
+                                    ? "Saving..."
+                                    : "✓ Confirm & Complete"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

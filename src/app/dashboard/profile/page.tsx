@@ -3,6 +3,7 @@
 
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 
 type UserProfile = {
@@ -15,7 +16,7 @@ type UserProfile = {
     bio?: string;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "");
 
 export default function ProfilePage() {
     const [profile, setProfile] = useState<UserProfile>({
@@ -197,12 +198,14 @@ export default function ProfilePage() {
             });
 
             setMessage("Profile updated successfully!");
+            toast.success("Profile updated successfully!");
         } catch (err) {
-            setError(
+            const msg =
                 err instanceof Error
                     ? err.message
-                    : "Something went wrong while updating your profile."
-            );
+                    : "Something went wrong while updating your profile.";
+            setError(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }

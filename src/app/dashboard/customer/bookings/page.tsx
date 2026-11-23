@@ -3,12 +3,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import {
     formatUSD,
     formatStripePaymentError,
     MIN_STRIPE_CHECKOUT_USD,
 } from "@/lib/currency";
+import { getBookingStatusStyle } from "@/lib/constants";
+import ConfirmModal from "@/components/shared/ConfirmModal";
 
 type BookingStatus =
     | "requested"
@@ -22,21 +25,19 @@ type Booking = {
     _id: string;
     serviceTitle: string;
     serviceImage?: string;
+    technicianName?: string;
     technicianEmail?: string;
     bookingDate: string;
+    preferredDate?: string;
     address: string;
     notes?: string;
+    problemDescription?: string;
     basePrice: number;
     finalAmount: number | null;
     status: BookingStatus;
     paymentStatus: "unpaid" | "paid";
     createdAt: string;
 };
-
-type Toast = {
-    type: "success" | "error";
-    message: string;
-} | null;
 
 const API_URL = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
@@ -47,21 +48,15 @@ export default function CustomerBookingsPage() {
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState("");
     const [payingId, setPayingId] = useState("");
-    const [toast, setToast] = useState<Toast>(null);
+    const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
 
     const showToast = (type: "success" | "error", message: string) => {
-        setToast({ type, message });
+        if (type === "success") {
+            toast.success(message);
+        } else {
+            toast.error(message);
+        }
     };
-
-    useEffect(() => {
-        if (!toast) return;
-
-        const timer = setTimeout(() => {
-            setToast(null);
-        }, 3500);
-
-        return () => clearTimeout(timer);
-    }, [toast]);
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -108,12 +103,10 @@ export default function CustomerBookingsPage() {
         fetchBookings();
     }, [fetchBookings]);
 
-    const cancelBooking = async (bookingId: string) => {
-        const confirmed = window.confirm(
-            "Are you sure you want to cancel this booking?"
-        );
+    const confirmCancelBooking = async () => {
+        if (!cancelTargetId) return;
 
-        if (!confirmed) return;
+        const bookingId = cancelTargetId;
 
         try {
             setUpdatingId(bookingId);
@@ -143,6 +136,7 @@ export default function CustomerBookingsPage() {
                 );
             }
 
+            setCancelTargetId(null);
             showToast("success", "Booking cancelled successfully!");
 
             await fetchBookings();
@@ -239,24 +233,8 @@ export default function CustomerBookingsPage() {
         }
     };
 
-    const getStatusStyle = (status: BookingStatus) => {
-        const styles: Record<BookingStatus, string> = {
-            requested:
-                "border-yellow-500/30 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-            accepted:
-                "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
-            rejected:
-                "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
-            "in-progress":
-                "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400",
-            completed:
-                "border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400",
-            cancelled:
-                "border-gray-500/30 bg-gray-500/10 text-gray-600 dark:text-gray-400",
-        };
-
-        return styles[status];
-    };
+    const getStatusStyle = (status: BookingStatus) =>
+        getBookingStatusStyle(status);
 
     const requestedCount = bookings.filter(
         (booking) => booking.status === "requested"
@@ -370,33 +348,6 @@ export default function CustomerBookingsPage() {
                     </button>
                 </div>
 
-                {/* Toast Notification */}
-                {toast && (
-                    <div
-                        role={toast.type === "error" ? "alert" : "status"}
-                        className={`fixed right-5 top-5 z-50 flex max-w-sm items-center gap-3 rounded-xl border px-5 py-4 shadow-2xl ${toast.type === "success"
-                                ? "border-green-500/30 bg-green-50 text-green-700 dark:bg-[#10251a] dark:text-green-400"
-                                : "border-red-500/30 bg-red-50 text-red-700 dark:bg-[#291414] dark:text-red-400"
-                            }`}
-                    >
-                        <span className="text-xl">
-                            {toast.type === "success" ? "✓" : "!"}
-                        </span>
-
-                        <p className="text-sm font-semibold">
-                            {toast.message}
-                        </p>
-
-                        <button
-                            onClick={() => setToast(null)}
-                            aria-label="Close notification"
-                            className="ml-2 text-lg opacity-70 hover:opacity-100"
-                        >
-                            ×
-                        </button>
-                    </div>
-                )}
-
                 {/* Booking List */}
                 {loading ? (
                     <div className="rounded-2xl border border-zinc-200 bg-white p-14 text-center transition-colors duration-300 dark:border-white/10 dark:bg-[#111111]">
@@ -433,18 +384,34 @@ export default function CustomerBookingsPage() {
                             >
                                 {/* Booking Header */}
                                 <div className="flex flex-wrap items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">
-                                            Service Booking
-                                        </p>
+                                    <div className="flex items-start gap-4">
+                                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-black/40">
+                                            {booking.serviceImage ? (
+                                                <img
+                                                    src={booking.serviceImage}
+                                                    alt={booking.serviceTitle}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full items-center justify-center text-2xl">
+                                                    🔧
+                                                </div>
+                                            )}
+                                        </div>
 
-                                        <h2 className="mt-2 text-xl font-bold sm:text-2xl">
-                                            {booking.serviceTitle}
-                                        </h2>
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                                                Service Booking
+                                            </p>
 
-                                        <p className="mt-2 break-all text-xs text-zinc-500 dark:text-gray-500">
-                                            Booking ID: {booking._id}
-                                        </p>
+                                            <h2 className="mt-1 text-xl font-bold sm:text-2xl">
+                                                {booking.serviceTitle}
+                                            </h2>
+
+                                            <p className="mt-1 break-all text-xs text-zinc-500 dark:text-gray-500">
+                                                Booking ID: {booking._id}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <span
@@ -452,7 +419,7 @@ export default function CustomerBookingsPage() {
                                             booking.status
                                         )}`}
                                     >
-                                        {booking.status}
+                                        {booking.status.replace("-", " ")}
                                     </span>
                                 </div>
 
@@ -460,23 +427,36 @@ export default function CustomerBookingsPage() {
                                 <div className="mt-7 grid gap-5 border-t border-zinc-200 pt-6 dark:border-white/10 sm:grid-cols-2 lg:grid-cols-3">
                                     <div>
                                         <p className="text-xs text-zinc-500 dark:text-gray-500">
-                                            Technician Email
+                                            Technician
                                         </p>
 
-                                        <p className="mt-2 break-all font-medium">
-                                            {booking.technicianEmail || "Not available"}
+                                        <p className="mt-2 font-medium">
+                                            {booking.technicianName ||
+                                                booking.technicianEmail ||
+                                                "Verified Technician"}
                                         </p>
+                                        {booking.technicianName &&
+                                            booking.technicianEmail && (
+                                                <p className="mt-0.5 break-all text-xs text-zinc-500 dark:text-gray-500">
+                                                    {booking.technicianEmail}
+                                                </p>
+                                            )}
                                     </div>
 
                                     <div>
                                         <p className="text-xs text-zinc-500 dark:text-gray-500">
-                                            Booking Date
+                                            Preferred Date
                                         </p>
 
                                         <p className="mt-2 font-medium">
                                             {new Date(
-                                                booking.bookingDate
-                                            ).toLocaleString("en-BD")}
+                                                booking.preferredDate ||
+                                                    booking.bookingDate
+                                            ).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                            })}
                                         </p>
                                     </div>
 
@@ -547,7 +527,7 @@ export default function CustomerBookingsPage() {
                                     {booking.status === "requested" && (
                                         <button
                                             onClick={() =>
-                                                cancelBooking(booking._id)
+                                                setCancelTargetId(booking._id)
                                             }
                                             disabled={updatingId === booking._id}
                                             className="rounded-lg border border-red-500/40 bg-red-500/10 px-6 py-3 text-sm font-bold text-red-600 transition hover:bg-red-500/20 disabled:opacity-50 dark:text-red-400"
@@ -633,6 +613,17 @@ export default function CustomerBookingsPage() {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                open={Boolean(cancelTargetId)}
+                title="Cancel Repair Request?"
+                description="Are you sure you want to cancel this booking? This action cannot be undone."
+                confirmLabel="Yes, Cancel Booking"
+                cancelLabel="Keep Booking"
+                loading={Boolean(updatingId)}
+                onConfirm={confirmCancelBooking}
+                onCancel={() => setCancelTargetId(null)}
+            />
         </main>
     );
 }
